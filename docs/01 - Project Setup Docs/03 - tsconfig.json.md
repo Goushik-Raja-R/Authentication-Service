@@ -479,7 +479,7 @@ Because our project is a backend application and does not render React component
 
 # 🔗 Related Notes
 
-- [[01 - Project Initialization]]
+- [[01 - Project initialization]]
 - [[02 - TypeScript Setup]]
 - [[04 - Express Setup]]
 - [[06 - Package.json Scripts]]

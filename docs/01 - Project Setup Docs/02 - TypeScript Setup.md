@@ -333,7 +333,7 @@ It also supports watch mode for automatic restarts.
 
 # 🔗 Related Notes
 
-- [[01 - Project Initialization]]
+- [[01 - Project initialization]]
 - [[03 - tsconfig.json]]
 - [[04 - Express Setup]]
 - [[06 - Package.json Scripts]]

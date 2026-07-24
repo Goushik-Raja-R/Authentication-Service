@@ -398,7 +398,7 @@ Because `tsx` is a development tool. Production environments should run compiled
 
 # 🔗 Related Notes
 
-- [[01 - Project Initialization]]
+- [[01 - Project initialization]]
 - [[02 - TypeScript Setup]]
 - [[03 - tsconfig.json]]
 - [[04 - Express Setup]]

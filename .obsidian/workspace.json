@@ -111,16 +111,170 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/00 - Project Overview/01- Project Requirements.md",
+                "file": "docs/00 - Project Overview Docs/01 - Project Overview.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "01- Project Requirements"
+              "title": "01 - Project Overview"
+            }
+          },
+          {
+            "id": "0e4c8daaa9b076d5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/00 - Project Overview Docs/02 - Project Goals.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "02 - Project Goals"
+            }
+          },
+          {
+            "id": "62b12995c5838cef",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/00 - Project Overview Docs/03 - Project Scope.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "03 - Project Scope"
+            }
+          },
+          {
+            "id": "88890a79ce541dd6",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/00 - Project Overview Docs/04 - Functional Requirements.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "04 - Functional Requirements"
+            }
+          },
+          {
+            "id": "3d1f65c2215c6607",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/00 - Project Overview Docs/05 - Non-Functional Requirements.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "05 - Non-Functional Requirements"
+            }
+          },
+          {
+            "id": "9bf29ef1799e6680",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/00 - Project Overview Docs/07 - Architecture Overview.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "07 - Architecture Overview"
+            }
+          },
+          {
+            "id": "61b80b174468341f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/02 - Architecture Docs/01 - Layered Architecture.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "01 - Layered Architecture"
+            }
+          },
+          {
+            "id": "e3e91762e5b5b4bb",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/02 - Architecture Docs/01 - Layered Architecture.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "01 - Layered Architecture"
+            }
+          },
+          {
+            "id": "b00f8a0ed9149ced",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/02 - Architecture Docs/03 - MVC vs Layered.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "03 - MVC vs Layered"
+            }
+          },
+          {
+            "id": "a9a939cfddfd3443",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/02 - Architecture Docs/04 - Dependency Flow.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "04 - Dependency Flow"
+            }
+          },
+          {
+            "id": "f77f3b1c1a7a1c0c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/02 - Architecture Docs/05 - Error Flow.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "05 - Error Flow"
+            }
+          },
+          {
+            "id": "1ea807d792f20bba",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/03 - Database Design Docs/01 - Database Overview.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "01 - Database Overview"
             }
           }
         ],
-        "currentTab": 7
+        "currentTab": 18
       }
     ],
     "direction": "vertical"
@@ -284,21 +438,39 @@
   },
   "active": "b306f59b6e2bdb8a",
   "lastOpenFiles": [
-    "docs/00 - Project Overview",
+    "docs/03 - Database Design Docs/05 - Database Security.md",
+    "docs/03 - Database Design Docs/04 - Database Relationships.md",
+    "docs/03 - Database Design Docs/03 - Refresh Token Design.md",
+    "docs/03 - Database Design Docs/02 - User Entity Design.md",
+    "docs/03 - Database Design Docs/01 - Database Overview.md",
+    "docs/02 - Architecture Docs/05 - Error Flow.md",
+    "docs/03 - Database Design Docs",
     "docs/New folder",
+    "docs/02 - Architecture Docs/04 - Dependency Flow.md",
+    "docs/02 - Architecture Docs/02 - Request Lifecycle.md",
+    "docs/02 - Architecture Docs/03 - MVC vs Layered.md",
+    "docs/02 - Architecture Docs/01 - Layered Architecture.md",
+    "docs/00 - Project Overview Docs/07 - Architecture Overview.md",
+    "docs/02 - Architecture Docs",
+    "docs/00 - Project Overview Docs/08 - Development Phases.md",
+    "docs/00 - Project Overview Docs/05 - Non-Functional Requirements.md",
+    "docs/00 - Project Overview Docs/06 - Tech Stack.md",
+    "docs/00 - Project Overview Docs/04 - Functional Requirements.md",
+    "docs/00 - Project Overview Docs/03 - Project Scope.md",
+    "docs/00 - Project Overview Docs/01 - Project Overview.md",
+    "docs/00 - Project Overview Docs/02 - Project Goals.md",
+    "docs/00 - Project Overview Docs",
     "docs/00 -",
-    "docs/01 - Project Setup/07 - Development Workflow.md",
-    "docs/01 - Project Setup/06 - Package.json Scripts.md",
-    "docs/01 - Project Setup/05 - Project Structure.md",
-    "docs/01 - Project Setup/04 - Express Setup.md",
-    "docs/01 - Project Setup/03 - tsconfig.json.md",
-    "docs/01 - Project Setup/01 - Project initialization.md",
+    "docs/01 - Project Setup Docs/07 - Development Workflow.md",
+    "docs/01 - Project Setup Docs/06 - Package.json Scripts.md",
+    "docs/01 - Project Setup Docs/05 - Project Structure.md",
+    "docs/01 - Project Setup Docs/04 - Express Setup.md",
+    "docs/01 - Project Setup Docs/03 - tsconfig.json.md",
+    "docs/01 - Project Setup Docs/01 - Project initialization.md",
     "node_modules/cookie-signature/History.md",
-    "docs/00 - Project Overview/01- Project Requirements.md",
-    "docs/01 - Project Setup/02 - TypeScript Setup.md",
-    "docs/01 - Project Setup",
+    "docs/01 - Project Setup Docs/02 - TypeScript Setup.md",
+    "docs/01 - Project Setup Docs",
     "Untitled",
-    "docs/02-Project Setup.md",
     "node_modules/@esbuild/darwin-arm64",
     "docs"
   ]

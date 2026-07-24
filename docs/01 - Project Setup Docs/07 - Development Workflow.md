@@ -428,7 +428,7 @@ The `dist` folder contains the compiled JavaScript that Node.js executes in prod
 
 # 🔗 Related Notes
 
-- [[01 - Project Initialization]]
+- [[01 - Project initialization]]
 - [[02 - TypeScript Setup]]
 - [[03 - tsconfig.json]]
 - [[04 - Express Setup]]

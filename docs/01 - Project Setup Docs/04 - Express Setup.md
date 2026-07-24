@@ -359,7 +359,7 @@ The package provides TypeScript type definitions for Express APIs.
 
 # 🔗 Related Notes
 
-- [[01 - Project Initialization]]
+- [[01 - Project initialization]]
 - [[02 - TypeScript Setup]]
 - [[03 - tsconfig.json]]
 - [[05 - Project Structure]]
