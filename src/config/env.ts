@@ -3,24 +3,16 @@ dotenv.config();
 
 const PORT = process.env.PORT;
 
-if(typeof(PORT) === undefined){
-     console.log("The variable doesn't exist.")
+if(!PORT){
+     console.error("PORT environment variable is missing.");
+     process.exit(1);
 }
 
-// const PN = parseInt(PORT);
+const PORT_NUMBER = parseInt(PORT,10);
 
-// if(typeof(PORT) === isNaN){
+if(isNaN(PORT_NUMBER)){
+    console.error("Invalid PORT value.");
+    process.exit(1);
+}
 
-// }
-
-export default PORT
-
-
-// Loads the environment variables.
-// Reads PORT.
-// Checks if PORT is missing.
-// Throws a meaningful error if it's missing.
-// Converts PORT to a number using parseInt().
-// Checks if the conversion produced NaN.
-// Throws a meaningful error if the value isn't a valid number.
-// Exports the validated number.
+export default PORT_NUMBER
