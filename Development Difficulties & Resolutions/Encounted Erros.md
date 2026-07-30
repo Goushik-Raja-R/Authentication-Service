@@ -687,3 +687,479 @@ Skipping installation or configuration leads to unnecessary problems later.
 Today's session reminded me that backend engineering is not only about writing code. A significant part of the work is setting up the environment, understanding the architecture, and preparing a solid foundation before implementing features.
 
 These challenges are expected when learning a new technology stack, and overcoming them now will make future development smoother.
+
+---
+
+# 📅 Backend Journey - Day 4
+**Project:** Authentication Management Service
+**Date:** 31 July 2026
+
+---
+
+# 🎯 Goal of Today's Session
+
+Today we moved from database design to actually interacting with PostgreSQL.
+
+We successfully:
+
+- Created our first production-style table.
+- Understood every SQL constraint instead of memorizing syntax.
+- Learned how PostgreSQL executes SQL.
+- Learned how INSERT works conceptually.
+- Inserted our first SQL query (almost perfectly).
+
+---
+
+# 📚 Concepts Learned
+
+## 1. CREATE TABLE
+
+A table is created inside:
+
+PostgreSQL Server
+→ Database
+→ Schema
+→ Table
+
+Since our Query Tool was connected to:
+
+authentication_management
+
+PostgreSQL automatically created the table inside:
+
+public.users
+
+---
+
+## 2. Production Users Table
+
+```sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+Every line now makes sense.
+
+---
+
+## 3. SERIAL
+
+Purpose:
+
+Automatically generates increasing integer IDs.
+
+Example:
+
+```
+1
+2
+3
+4
+...
+```
+
+No manual ID assignment required.
+
+---
+
+## 4. PRIMARY KEY
+
+Purpose:
+
+- Every row has a unique identity.
+- Used to identify records efficiently.
+- Cannot contain duplicates.
+- Cannot be NULL.
+
+---
+
+## 5. VARCHAR
+
+Stores text.
+
+Examples:
+
+- Name
+- Email
+- Password Hash
+
+We chose:
+
+```
+Name      -> VARCHAR(50)
+Email     -> VARCHAR(255)
+Password  -> VARCHAR(255)
+```
+
+Reason:
+
+Use realistic limits based on expected data.
+
+---
+
+## 6. UNIQUE Constraint
+
+Business Rule:
+
+One email = One account
+
+Database Rule:
+
+```
+UNIQUE(email)
+```
+
+Even if application code fails,
+PostgreSQL prevents duplicate emails.
+
+---
+
+## 7. NOT NULL
+
+Purpose:
+
+Mandatory fields cannot be empty.
+
+Example:
+
+```
+name VARCHAR(50) NOT NULL
+```
+
+Without this:
+
+```
+Name = NULL
+```
+
+would be accepted.
+
+The database becomes the final layer of protection.
+
+---
+
+## 8. CURRENT_TIMESTAMP
+
+Purpose:
+
+Automatically fills timestamps during INSERT.
+
+Example:
+
+```
+created_at
+updated_at
+```
+
+The value comes from PostgreSQL's own system clock.
+
+---
+
+## 9. DEFAULT
+
+One of today's biggest lessons.
+
+DEFAULT executes ONLY during INSERT.
+
+Example:
+
+```
+created_at DEFAULT CURRENT_TIMESTAMP
+```
+
+When a row is created:
+
+PostgreSQL automatically fills the timestamp.
+
+During UPDATE:
+
+DEFAULT is NOT executed again.
+
+---
+
+## 10. Why updated_at Doesn't Change Automatically
+
+This was today's biggest realization.
+
+Wrong assumption:
+
+```
+DEFAULT CURRENT_TIMESTAMP
+```
+
+means
+
+```
+Always update timestamp.
+```
+
+Reality:
+
+DEFAULT only works during INSERT.
+
+During UPDATE we must explicitly write:
+
+```sql
+updated_at = CURRENT_TIMESTAMP
+```
+
+or later use a Trigger.
+
+---
+
+# CRUD
+
+We officially started CRUD.
+
+CRUD stands for:
+
+- Create
+- Read
+- Update
+- Delete
+
+Today's focus:
+
+✅ CREATE
+
+Next:
+
+SELECT
+
+---
+
+# INSERT
+
+We wrote our first INSERT statement.
+
+Initial version:
+
+```sql
+VALUES("goushik")
+```
+
+Mistake:
+
+PostgreSQL uses:
+
+Single Quotes
+
+Correct:
+
+```sql
+VALUES('goushik')
+```
+
+Lesson:
+
+Double Quotes → Identifiers
+
+Single Quotes → String values
+
+---
+
+# PostgreSQL Automatically Fills
+
+When we execute:
+
+```sql
+INSERT INTO users(name,email,password)
+VALUES(...);
+```
+
+PostgreSQL automatically fills:
+
+- id
+- created_at
+- updated_at
+
+because of:
+
+- SERIAL
+- DEFAULT CURRENT_TIMESTAMP
+
+---
+
+# Security Lesson
+
+Current:
+
+```
+Password
+```
+
+Learning purpose only.
+
+Production:
+
+```
+Password
+↓
+
+bcrypt.hash()
+
+↓
+
+Store hash only
+```
+
+Never store plain text passwords.
+
+---
+
+# Biggest Engineering Lessons Today
+
+## Lesson 1
+
+Database constraints protect data integrity.
+
+Do not rely only on application code.
+
+---
+
+## Lesson 2
+
+DEFAULT executes only during INSERT.
+
+It does not execute during UPDATE.
+
+---
+
+## Lesson 3
+
+The database should enforce important business rules.
+
+Examples:
+
+- PRIMARY KEY
+- UNIQUE
+- NOT NULL
+
+---
+
+## Lesson 4
+
+The database is the last line of defense.
+
+Application validates.
+
+Database enforces.
+
+Both are necessary.
+
+---
+
+# Mistakes I Made Today
+
+### 1.
+
+Used double quotes for string values.
+
+Correction:
+
+```sql
+'goushik'
+```
+
+instead of
+
+```sql
+"goushik"
+```
+
+---
+
+### 2.
+
+Initially thought DEFAULT CURRENT_TIMESTAMP might update updated_at automatically.
+
+Correction:
+
+DEFAULT only executes during INSERT.
+
+UPDATE requires explicit timestamp update.
+
+---
+
+# Progress Tracker
+
+✅ PostgreSQL Installed
+
+✅ pgAdmin Configured
+
+✅ Database Created
+
+✅ Schema Understood
+
+✅ users Table Designed
+
+✅ First CREATE TABLE Executed
+
+✅ First INSERT Statement Written
+
+⬜ Execute INSERT Successfully
+
+⬜ SELECT
+
+⬜ UPDATE
+
+⬜ DELETE
+
+⬜ Connect Node.js with PostgreSQL
+
+⬜ User Registration API
+
+⬜ Login API
+
+⬜ Password Hashing
+
+⬜ JWT Authentication
+
+⬜ Refresh Tokens
+
+---
+
+# Interview Questions Covered
+
+1. Why separate databases for different services?
+
+2. Why PRIMARY KEY?
+
+3. Why UNIQUE on email?
+
+4. Why NOT NULL?
+
+5. Why SERIAL?
+
+6. Why use CURRENT_TIMESTAMP?
+
+7. Why doesn't updated_at update automatically?
+
+8. Difference between DEFAULT and UPDATE.
+
+9. Why use users instead of user?
+
+10. Why should passwords never be stored as plain text?
+
+---
+
+# Senior Engineer Advice
+
+Today's biggest achievement wasn't writing SQL.
+
+It was understanding the reasoning behind every part of the table.
+
+A backend engineer should always ask:
+
+- Why this datatype?
+- Why this constraint?
+- What business rule does this enforce?
+- What happens if I remove it?
+
+If you can answer those questions, you're designing systems—not copying syntax.
