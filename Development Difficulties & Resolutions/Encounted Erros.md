@@ -505,3 +505,185 @@ export default PORT_NUMBER;
 - `console.error()` informs developers.
 - Exit codes inform the operating system and automation tools.
 - Configuration should fail fast to prevent undefined application behavior.
+  
+  
+  ---
+# 📓 Backend Engineering Learning Journal
+## Day 1 – Difficulties Faced
+**Project:** Authentication Service (Node.js + TypeScript + PostgreSQL)
+
+**Date:** 29 July 2026
+
+---
+
+# 🎯 Purpose
+
+This note records the difficulties I faced during today's session, why they happened, and how I plan to overcome them.
+
+---
+
+# 🚧 Difficulty 1: Jumping to Coding Before Environment Setup
+
+## What Happened
+
+I wanted to start writing the database connection code (`database.ts`) before checking whether PostgreSQL was installed.
+
+## Why It Happened
+
+I was focused on coding and overlooked the basic prerequisite of having a database server installed.
+
+## What I Learned
+
+Before writing backend code, always verify that all required tools and services are installed and running.
+
+## Action Item
+
+- Install PostgreSQL.
+- Verify PostgreSQL is running.
+- Open pgAdmin successfully before writing connection code.
+
+---
+
+# 🚧 Difficulty 2: Incomplete Environment Configuration
+
+## What Happened
+
+My `env.ts` only handled the `PORT` environment variable.
+
+## Why It Happened
+
+I designed it only for starting the Express server and didn't think ahead about database configuration.
+
+## What I Learned
+
+A centralized configuration file should manage all required environment variables.
+
+Future variables include:
+
+- PORT
+- DB_HOST
+- DB_PORT
+- DB_NAME
+- DB_USER
+- DB_PASSWORD
+
+## Action Item
+
+Refactor `env.ts` into a reusable configuration module after PostgreSQL setup.
+
+---
+
+# 🚧 Difficulty 3: Not Recognizing Duplicate Validation Logic
+
+## What Happened
+
+I validated only `PORT`, but I didn't think about how the same validation would be repeated for every new environment variable.
+
+## Why It Happened
+
+I focused on making the current code work rather than making it reusable.
+
+## What I Learned
+
+Whenever similar code starts repeating, it's usually a sign that it should be extracted into a reusable function.
+
+## Action Item
+
+Learn how to create a reusable helper function like:
+
+```ts
+getEnv(variableName: string)
+```
+
+---
+
+# 🚧 Difficulty 4: Lack of PostgreSQL Experience
+
+## What Happened
+
+When asked about database connectivity, I realized this would be my first PostgreSQL project.
+
+## Why It Happened
+
+Most of my previous work was in Oracle APEX, so PostgreSQL is a new technology for me.
+
+## What I Learned
+
+It's okay to be new to a technology. Understanding the concepts is more important than memorizing commands.
+
+## Action Item
+
+Build the project step by step instead of rushing.
+
+---
+
+# 🚧 Difficulty 5: Installation Process Confusion
+
+## What Happened
+
+During PostgreSQL installation, Stack Builder asked:
+
+> "Please select the application you would like to install."
+
+I wasn't sure whether I needed to install anything.
+
+## Why It Happened
+
+I wasn't familiar with PostgreSQL's installation process.
+
+## What I Learned
+
+Stack Builder installs optional extensions and tools. It is not required for our Authentication Service project.
+
+## Action Item
+
+Ignore optional components unless the project specifically requires them.
+
+---
+
+# 💡 Biggest Realization Today
+
+Backend development doesn't start with writing APIs.
+
+It starts with preparing the development environment correctly.
+
+Skipping installation or configuration leads to unnecessary problems later.
+
+---
+
+# 📝 Questions I Should Always Ask Before Coding
+
+- Is the required software installed?
+- Is the service running?
+- Do I have the correct credentials?
+- Have I configured my environment variables?
+- Can my application actually connect to the database?
+
+---
+
+# 📚 Key Lessons
+
+- Never assume prerequisites are complete.
+- Verify the environment before writing code.
+- Keep configuration centralized.
+- Avoid duplicate code.
+- Learn the reasoning behind each step instead of memorizing commands.
+
+---
+
+# 🎯 Plan for Next Session
+
+- [ ] Finish PostgreSQL installation.
+- [ ] Open pgAdmin.
+- [ ] Create the `authentication_management` database.
+- [ ] Configure `.env` with database credentials.
+- [ ] Build `database.ts`.
+- [ ] Test the first database connection.
+
+---
+
+# 🚀 Reflection
+
+Today's session reminded me that backend engineering is not only about writing code. A significant part of the work is setting up the environment, understanding the architecture, and preparing a solid foundation before implementing features.
+
+These challenges are expected when learning a new technology stack, and overcoming them now will make future development smoother.

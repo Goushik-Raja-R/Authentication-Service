@@ -385,10 +385,14 @@
             "id": "906d9f35e75d5f15",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "Development Difficulties & Resolutions/Encounted Erros.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Encounted Erros"
             }
           }
         ],
@@ -556,6 +560,9 @@
   },
   "active": "906d9f35e75d5f15",
   "lastOpenFiles": [
+    "docs/00 - Project Overview Docs/06 - Tech Stack.md",
+    "docs/00 - Project Overview Docs/03 - Project Scope.md",
+    "docs/00 - Project Overview Docs/01 - Project Overview.md",
     "Development Difficulties & Resolutions/Encounted Erros.md",
     "Development Difficulties & Resolutions",
     "docs/Untitled",
@@ -584,10 +591,7 @@
     "docs/03 - Database Design Docs/05 - Database Security.md",
     "docs/03 - Database Design Docs/04 - Database Relationships.md",
     "docs/03 - Database Design Docs/03 - Refresh Token Design.md",
-    "docs/03 - Database Design Docs/02 - User Entity Design.md",
-    "docs/03 - Database Design Docs/01 - Database Overview.md",
     "docs/03 - Database Design Docs",
-    "docs/01 - Project Setup Docs/07 - Development Workflow.md",
     "docs/01 - Project Setup Docs",
     "docs/00 - Project Overview Docs",
     "docs/New folder",
