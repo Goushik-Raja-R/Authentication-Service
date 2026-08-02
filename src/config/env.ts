@@ -15,4 +15,4 @@ if(isNaN(PORT_NUMBER)){
     process.exit(1);
 }
 
-export default PORT_NUMBER
+export default PORT_NUMBER;
