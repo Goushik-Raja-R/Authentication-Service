@@ -1163,3 +1163,445 @@ A backend engineer should always ask:
 - What happens if I remove it?
 
 If you can answer those questions, you're designing systems—not copying syntax.
+
+
+---
+
+---
+date: 2026-08-04
+project: Authentication Service
+tags:
+  - backend
+  - nodejs
+  - typescript
+  - postgresql
+  - database
+  - async-await
+status: Completed
+---
+
+# 📅 Session - 2026-08-04
+
+## 🎯 Session Goal
+Establish the first successful connection between the Node.js backend and PostgreSQL while understanding every concept involved instead of simply writing the code.
+
+---
+
+# ✅ Topics Covered
+
+## 1. Environment Variables
+
+### Added Database Configuration
+
+```env
+PORT=3000
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=authentication_management
+DB_USER=postgres
+DB_PASSWORD=********
+```
+
+### Learned
+
+- Why sensitive credentials should never be hardcoded.
+- `.env` stores configuration for different environments.
+- Development and production can use different `.env` files without changing application code.
+
+---
+
+## 2. `env.ts`
+
+### Responsibilities
+
+- Read environment variables.
+- Validate required variables.
+- Convert data types.
+- Export validated configuration.
+
+### Implemented
+
+- Read
+  - PORT
+  - DB_HOST
+  - DB_PORT
+  - DB_NAME
+  - DB_USER
+  - DB_PASSWORD
+
+- Presence Validation
+
+- Number Conversion
+
+```typescript
+PORT -> PORT_NUMBER
+
+DB_PORT -> DB_PORT_NUMBER
+```
+
+### Architecture
+
+```
+.env
+    │
+    ▼
+env.ts
+(Read + Validate + Export)
+```
+
+---
+
+## 3. `database.ts`
+
+### Learned
+
+- Why we use `Pool`
+- Why we create only one pool
+- Why the pool should be reused throughout the application
+
+### Created
+
+```typescript
+const pool = new Pool({
+    host,
+    port,
+    database,
+    user,
+    password
+});
+```
+
+### Architecture
+
+```
+.env
+
+↓
+
+env.ts
+
+↓
+
+database.ts
+
+↓
+
+Pool
+
+↓
+
+PostgreSQL
+```
+
+---
+
+## 4. Connection Pool
+
+### Learned
+
+Instead of
+
+```
+Every Request
+
+↓
+
+Create Connection
+
+↓
+
+Execute Query
+
+↓
+
+Close Connection
+```
+
+We use
+
+```
+Pool
+
+↓
+
+Reusable Connections
+
+↓
+
+Better Performance
+```
+
+---
+
+## 5. Async Programming
+
+### Topics
+
+- async
+- await
+- Promise
+
+### Understanding
+
+```
+Database Query
+
+↓
+
+WAIT
+
+↓
+
+Receive Result
+
+↓
+
+Continue Execution
+```
+
+### Realization
+
+> Without the query execution, we cannot know whether the user exists or not.
+
+---
+
+## 6. Database Query
+
+Executed the first query from the backend.
+
+```sql
+SELECT NOW();
+```
+
+Purpose
+
+- Verify PostgreSQL connection.
+- Verify backend can execute SQL.
+- Verify PostgreSQL returns data.
+
+---
+
+## 7. Query Result
+
+Learned that
+
+```typescript
+await pool.query(...)
+```
+
+returns a **Query Result Object**
+
+Structure
+
+```
+Result
+
+├── command
+├── rowCount
+├── rows
+├── fields
+└── types
+```
+
+Most important property
+
+```typescript
+result.rows
+```
+
+or
+
+```typescript
+result.rows[0]
+```
+
+---
+
+## 8. Startup Architecture
+
+Discussed where
+
+```
+testDatabaseConnection()
+```
+
+should live.
+
+Conclusion
+
+- Not Controller
+- Not Service
+- Not Repository
+
+It should be executed during application startup before Express starts listening.
+
+---
+
+## ⚠️ Difficulties Faced
+
+### 1. async / await
+
+Initially unclear about
+
+- Why async is required.
+- Why await is needed.
+- How asynchronous execution works.
+
+Current Understanding
+
+```
+Send Query
+
+↓
+
+Wait
+
+↓
+
+Receive Result
+
+↓
+
+Continue
+```
+
+---
+
+### 2. Query Result
+
+Initially thought
+
+```sql
+SELECT NOW();
+```
+
+returns only the current timestamp.
+
+Now understood
+
+```
+pool.query()
+
+↓
+
+Returns
+
+↓
+
+Query Result Object
+```
+
+Actual data is inside
+
+```typescript
+result.rows
+```
+
+---
+
+### 3. Project Architecture
+
+Initially confused about
+
+Where should
+
+```
+testDatabaseConnection()
+```
+
+be written.
+
+Current Understanding
+
+```
+database.ts
+
+↓
+
+Creates Pool
+
+↓
+
+Export Pool
+
+↓
+
+Other Files Import Pool
+```
+
+---
+
+## 💡 Important Takeaways
+
+- Every file should have one responsibility.
+- Configuration should be centralized.
+- Never hardcode credentials.
+- Reuse a single Pool instance.
+- Database operations are asynchronous.
+- await pauses only the current async function.
+- Query results are obtained from `result.rows`.
+- Startup logic is different from business logic.
+
+---
+
+# 🏆 Milestones Achieved
+
+- [x] PostgreSQL Installed
+- [x] PostgreSQL Connected
+- [x] Environment Variables Configured
+- [x] env.ts Created
+- [x] database.ts Created
+- [x] Connection Pool Created
+- [x] Async/Await Understood
+- [x] First SQL Query Executed from Backend
+
+---
+
+# 📌 Next Session
+
+## Database Connection
+
+- [ ] Create `testDatabaseConnection.ts`
+- [ ] Import reusable `pool`
+- [ ] Test connection during startup
+
+## Authentication Module
+
+- [ ] Create Routes
+- [ ] Create Controller
+- [ ] Create Service
+- [ ] Create Repository
+- [ ] Build `POST /register`
+
+---
+
+# 🚀 Progress
+
+```
+Authentication Service
+
+██████████████████░░░░░░░░░░░░░░░ 35%
+
+Completed
+
+✅ Project Setup
+✅ Express
+✅ TypeScript
+✅ PostgreSQL
+✅ SQL
+✅ Environment Configuration
+✅ Database Connection
+
+Next
+
+⬜ Register API
+⬜ Login API
+⬜ JWT
+⬜ Refresh Token
+⬜ Authentication Middleware
+⬜ Testing
+⬜ Docker
+⬜ CI/CD
+⬜ Deployment
+```
