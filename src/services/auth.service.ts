@@ -1,26 +1,32 @@
-import express from 'express';
 import bcrypt from 'bcrypt';
+import type { User } from '../types/user.types.js';
 
-import { existingUser } from '../repositories/auth.repository.js';
+import { existingUser,createUser } from '../repositories/auth.repository.js';
 
 
-export const ServiceResgister = async(user)=>{
+export const ServiceResgister = async(user:User)=>{
 
-        const CheckExistingUser = await existingUser(user.email);
+        const checkExistingUser = await existingUser(user.email);
 
-        if(CheckExistingUser){
+        if(checkExistingUser){
             throw new Error("User Already Exists");
         }
 
-        const hashpassword = await bcrypt.hash(user.password,10);
+        const hashedpassword = await bcrypt.hash(user.password,10);
 
-        const newuser =({
+        const userWithHashedPassword =({
             name:user.name,
             email:user.email,
-            password:hashpassword
+            password:hashedpassword
         })
 
-        createUser(newuser);
+        const result = await createUser(userWithHashedPassword);
+
+        if(result){
+            return result;
+        }
+
+        throw new Error ("Error Occured while creation of user");
 
 }
 

@@ -1,6 +1,6 @@
-import express from 'express';
-import {Request,Response} from 'express';
-import ServiceResgister from '../services/auth.service.js'
+import type {Request,Response} from 'express';
+
+import { ServiceResgister } from '../services/auth.service.js';
 
 export const register = async (req:Request,res:Response) =>{
       try{
@@ -8,9 +8,9 @@ export const register = async (req:Request,res:Response) =>{
             const result = await ServiceResgister(user);
 
             if(result){
-                return res.status(200).json({
+                return res.status(201).json({
                     message:"User Created Successfully",
-                    data:result.data
+                    data:result
                 })
             }else{
                 return res.status(400).json({
