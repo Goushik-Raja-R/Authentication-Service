@@ -1605,3 +1605,672 @@ Next
 ⬜ CI/CD
 ⬜ Deployment
 ```
+
+
+---
+
+---
+tags:
+  - Backend
+  - Authentication
+  - ExpressJS
+  - TypeScript
+  - PostgreSQL
+  - bcrypt
+  - RepositoryPattern
+  - Learning
+date: 2026-08-06
+---
+
+# 📅 2026-08-06 - Backend Authentication Service (Session Wrap)
+
+## 🎯 Session Goal
+
+Complete the **User Registration API** using the layered architecture:
+
+```text
+Client
+   │
+   ▼
+Routes
+   │
+   ▼
+Controller
+   │
+   ▼
+Service
+   │
+   ▼
+Repository
+   │
+   ▼
+PostgreSQL
+```
+
+---
+
+# ✅ What We Completed
+
+## 1. Completed the Register API
+
+Successfully implemented the complete **User Registration API**.
+
+### Flow
+
+```text
+Client
+    │
+    ▼
+POST /api/v1/auth/register
+    │
+    ▼
+Routes
+    │
+    ▼
+Controller
+    │
+    ▼
+Service
+    │
+    ├── Check Existing User
+    ├── Hash Password
+    ├── Create New User Object
+    └── Call createUser()
+    │
+    ▼
+Repository
+    │
+    ├── SELECT
+    └── INSERT
+    │
+    ▼
+PostgreSQL
+```
+
+---
+
+# 🗄️ Repository Layer
+
+## ✅ Implemented `existingUser(email)`
+
+### Responsibilities
+
+- Imported PostgreSQL connection pool.
+- Used parameterized SQL query.
+- Returned:
+  - User object if found.
+  - `undefined` if user doesn't exist.
+
+### Learned
+
+Repository should only communicate with the database.
+
+It should **not** make business decisions.
+
+---
+
+## ✅ Implemented `createUser(user)`
+
+### SQL Query
+
+```sql
+INSERT INTO users(name,email,password)
+VALUES($1,$2,$3)
+RETURNING id,name,email;
+```
+
+### Learned
+
+❌ Wrong
+
+```sql
+VALUES('$1','$2','$3')
+```
+
+✅ Correct
+
+```sql
+VALUES($1,$2,$3)
+```
+
+---
+
+## PostgreSQL `RETURNING`
+
+Initially:
+
+```sql
+INSERT INTO users(...)
+VALUES(...);
+```
+
+Result:
+
+```
+Rows inserted
+
+↓
+
+No returned data
+```
+
+After adding:
+
+```sql
+RETURNING id,name,email;
+```
+
+Result:
+
+```text
+Inserted User
+
+↓
+
+Returned to Repository
+
+↓
+
+Returned to Service
+
+↓
+
+Returned to Controller
+```
+
+### Learned
+
+Instead of:
+
+```sql
+RETURNING *
+```
+
+Return only required columns.
+
+Reason:
+
+- Better Security
+- Smaller Response
+- Follow Principle of Least Privilege
+
+---
+
+# ⚙️ Service Layer
+
+## Implemented Register Business Logic
+
+### Flow
+
+```text
+Receive User
+
+↓
+
+Check Existing User
+
+↓
+
+User Exists?
+
+↓
+
+YES
+↓
+
+Throw Error
+
+↓
+
+NO
+
+↓
+
+Hash Password
+
+↓
+
+Create New User Object
+
+↓
+
+Call createUser()
+
+↓
+
+Return Created User
+```
+
+---
+
+## Password Hashing
+
+Implemented:
+
+```typescript
+bcrypt.hash(password,10)
+```
+
+### Learned
+
+- Never store plain passwords.
+- Always hash passwords before inserting into the database.
+- Salt Rounds used:
+
+```
+10
+```
+
+---
+
+## Created New Object
+
+Instead of:
+
+```typescript
+user.password = hashedPassword;
+```
+
+Created:
+
+```typescript
+const userWithHashedPassword = {
+    ...user,
+    password: hashedPassword
+}
+```
+
+### Reason
+
+- Avoid Object Mutation
+- Better Readability
+- Safer Design
+
+---
+
+# 📝 TypeScript
+
+Created shared interface.
+
+```
+src/types/user.types.ts
+```
+
+Example
+
+```typescript
+export interface User{
+    name:string;
+    email:string;
+    password:string;
+}
+```
+
+---
+
+## Learned
+
+Because of:
+
+```json
+"verbatimModuleSyntax": true
+```
+
+Need:
+
+```typescript
+import type { User } from "...";
+```
+
+instead of
+
+```typescript
+import { User } from "...";
+```
+
+---
+
+# 🌐 Express Routing
+
+Understood routing hierarchy.
+
+```text
+app.ts
+
+↓
+
+index.ts
+
+↓
+
+auth.routes.ts
+
+↓
+
+Controller
+```
+
+---
+
+## Learned Difference
+
+### router.post()
+
+Used to handle an HTTP Request.
+
+Example
+
+```text
+POST /register
+```
+
+---
+
+### router.use()
+
+Used to mount another Router.
+
+Example
+
+```text
+/auth
+```
+
+---
+
+## Final Route
+
+```http
+POST
+/api/v1/auth/register
+```
+
+---
+
+# ⚙️ Configuration
+
+Resolved TypeScript configuration issue.
+
+Changed
+
+```json
+"module":"nodenext"
+```
+
+to
+
+```json
+"module":"NodeNext"
+```
+
+---
+
+# 🧪 Testing
+
+## Tested Using Postman
+
+Endpoint
+
+```http
+POST
+/api/v1/auth/register
+```
+
+Request
+
+```json
+{
+    "name":"sreeraj",
+    "email":"sreeraj@gmail.com",
+    "password":"Sreeraj@123"
+}
+```
+
+Response
+
+```json
+{
+    "message":"User Created Successfully",
+    "data":{
+        "id":5,
+        "name":"sreeraj",
+        "email":"sreeraj@gmail.com"
+    }
+}
+```
+
+Status
+
+```
+201 Created
+```
+
+---
+
+# 🛢️ PostgreSQL Verification
+
+Verified database manually.
+
+Confirmed:
+
+- User inserted successfully.
+- Password stored as bcrypt hash.
+- Plain password was never stored.
+
+---
+
+# 📚 Concepts Learned Today
+
+- Layered Architecture
+- Controller → Service → Repository
+- Repository Pattern
+- Business Logic Separation
+- Parameterized SQL Queries
+- PostgreSQL RETURNING
+- Password Hashing (bcrypt)
+- Shared TypeScript Interfaces
+- Type-only Imports
+- router.use() vs router.post()
+- API Versioning
+- Returning Selected Columns
+- End-to-End API Flow
+
+---
+
+# ⚠️ Difficulties Faced
+
+## 1. Passing Data Between Layers
+
+Initially confused about how data flows.
+
+### Understood Flow
+
+```text
+Controller
+
+↓
+
+Service
+
+↓
+
+Repository(email)
+```
+
+---
+
+## 2. Repository Return Value
+
+Initially thought repository should throw error if user not found.
+
+Learned:
+
+```
+Repository
+
+↓
+
+Return Database Result
+
+↓
+
+Service
+
+↓
+
+Business Decision
+```
+
+---
+
+## 3. throw Error()
+
+Initially confused about how Controller receives the error.
+
+Learned:
+
+```text
+throw Error()
+
+↓
+
+Stops Current Function
+
+↓
+
+Moves to Nearest Catch Block
+```
+
+---
+
+## 4. router.post() vs router.use()
+
+Understood:
+
+```
+router.post()
+
+↓
+
+HTTP Request Handler
+```
+
+```
+router.use()
+
+↓
+
+Mount Another Router
+```
+
+---
+
+## 5. PostgreSQL RETURNING
+
+Learned why INSERT alone doesn't return inserted rows.
+
+---
+
+## 6. bcrypt Type Error
+
+Solved by installing
+
+```bash
+npm install --save-dev @types/bcrypt
+```
+
+---
+
+## 7. Type-only Imports
+
+Learned why
+
+```typescript
+import type
+```
+
+is required.
+
+---
+
+# 🏆 Biggest Achievement
+
+Successfully built and tested the **first complete Backend API**.
+
+The Register API now:
+
+- Receives client requests.
+- Checks existing users.
+- Hashes passwords.
+- Inserts user into PostgreSQL.
+- Returns created user.
+- Stores passwords securely.
+
+---
+
+# 🚀 Next Session Plan
+
+## Register API Improvements
+
+- Global Error Handler
+- Proper HTTP Status Codes
+- Request Validation
+- Remove Repetitive try/catch
+
+---
+
+## Login API
+
+Topics to Learn
+
+- bcrypt.compare()
+- JWT
+- Access Tokens
+- Authentication Middleware
+
+---
+
+# 📈 Backend Progress
+
+```text
+Project Setup                  ██████████ 100%
+
+Environment Configuration      ██████████ 100%
+
+Database Configuration         ██████████ 100%
+
+Express Architecture           ██████████ 100%
+
+Register API                   ██████████ 100%
+
+Login API                      ░░░░░░░░░░   0%
+
+JWT Authentication             ░░░░░░░░░░   0%
+
+Protected Routes               ░░░░░░░░░░   0%
+
+Role Authorization             ░░░░░░░░░░   0%
+
+Deployment                     ░░░░░░░░░░   0%
+```
+
+---
+
+# 💭 Mentor Notes
+
+## What Improved Today
+
+- Started thinking in terms of architecture instead of syntax.
+- Understood why each layer exists.
+- Asked design-oriented questions instead of implementation-only questions.
+- Successfully implemented the complete Register API independently with guidance.
+
+---
+
+# 🎯 Session Outcome
+
+✅ First production-style Register API completed successfully.
+
+**Status:** Completed ✅
+
+**Next Milestone:** Build a production-ready Login API with JWT Authentication.
