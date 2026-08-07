@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import type { User } from '../types/user.types.js';
+import AppError from '../errors/AppError.js';
 
 import { existingUser,createUser } from '../repositories/auth.repository.js';
 
@@ -9,7 +10,7 @@ export const ServiceResgister = async(user:User)=>{
         const checkExistingUser = await existingUser(user.email);
 
         if(checkExistingUser){
-            throw new Error("User Already Exists");
+            throw new AppError("User Already Exist",409);
         }
 
         const hashedpassword = await bcrypt.hash(user.password,10);
@@ -26,7 +27,7 @@ export const ServiceResgister = async(user:User)=>{
             return result;
         }
 
-        throw new Error ("Error Occured while creation of user");
+        throw new AppError ("Error Occured while creation of user",500);
 
 }
 
