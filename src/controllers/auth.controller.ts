@@ -1,5 +1,4 @@
 import type {Request,Response} from 'express';
-import AppError from '../errors/AppError.js';
 
 import { ServiceResgister } from '../services/auth.service.js';
 

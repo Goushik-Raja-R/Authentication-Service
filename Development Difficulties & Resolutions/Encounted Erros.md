@@ -2274,3 +2274,1553 @@ Deployment                     ░░░░░░░░░░   0%
 **Status:** Completed ✅
 
 **Next Milestone:** Build a production-ready Login API with JWT Authentication.
+
+---
+
+# Backend Authentication Service — 7 August 2026
+
+> [!summary]  
+> **Session Focus:** Global Error Handling + Login Authentication Fundamentals
+
+---
+
+## 1. Custom `AppError`
+
+Created a custom error class to represent application/business errors with an HTTP status code.
+
+```ts
+export class AppError extends Error {
+    statusCode: number;
+
+    constructor(message: string, statusCode: number) {
+        super(message);
+
+        this.statusCode = statusCode;
+        this.name = "AppError";
+    }
+}
+```
+
+### Why `AppError`?
+
+Normal JavaScript `Error` mainly provides the error message.
+
+Our backend also needs an HTTP status code:
+
+```text
+message    → "User already exists"
+statusCode → 409
+```
+
+So `AppError` allows us to keep both together:
+
+```text
+AppError
+├── message
+└── statusCode
+```
+
+---
+
+## 2. Inheritance
+
+```ts
+class AppError extends Error
+```
+
+Means:
+
+```text
+Error
+  ↑
+AppError
+```
+
+`AppError` inherits functionality from JavaScript's built-in `Error` class.
+
+### Key Idea
+
+`extends` is used when one class needs to inherit properties and methods from another class.
+
+```ts
+class Child extends Parent
+```
+
+In our case:
+
+```ts
+class AppError extends Error
+```
+
+Therefore:
+
+```text
+AppError
+   │
+   ├── inherits Error functionality
+   │
+   ├── message
+   ├── name
+   └── stack
+       
+   + custom property
+       └── statusCode
+```
+
+---
+
+## 3. `super()`
+
+```ts
+super(message);
+```
+
+Because `AppError` extends `Error`, `super()` calls the parent `Error` constructor and initializes the error with the message.
+
+```ts
+constructor(message: string, statusCode: number) {
+    super(message);
+
+    this.statusCode = statusCode;
+}
+```
+
+### Concept
+
+```text
+AppError constructor
+        ↓
+super(message)
+        ↓
+Error constructor
+        ↓
+Error message initialized
+```
+
+Without calling `super()` in a derived class constructor, JavaScript will not allow us to use `this`.
+
+---
+
+## 4. `this`
+
+```ts
+this.statusCode = statusCode;
+```
+
+Here:
+
+```text
+statusCode
+    ↓
+constructor parameter
+
+this.statusCode
+    ↓
+property of the current AppError object
+```
+
+For example:
+
+```ts
+new AppError("User already exists", 409);
+```
+
+creates an object conceptually like:
+
+```text
+AppError Object
+├── message: "User already exists"
+├── statusCode: 409
+└── name: "AppError"
+```
+
+### Important
+
+`this` refers to the **current object instance**.
+
+---
+
+# Global Error Handling
+
+## 5. Why Global Error Handling?
+
+Initially, the controller handled errors using:
+
+```ts
+try {
+    ...
+} catch (error) {
+    ...
+}
+```
+
+If every controller does this, the same error-handling logic gets repeated.
+
+For example:
+
+```text
+Register Controller
+    ↓
+try/catch
+
+Login Controller
+    ↓
+try/catch
+
+Profile Controller
+    ↓
+try/catch
+
+Product Controller
+    ↓
+try/catch
+```
+
+This creates duplicated logic.
+
+Instead, we created one centralized middleware:
+
+```text
+src/
+└── middlewares/
+    └── error.middleware.ts
+```
+
+This allows all errors to be handled in one place.
+
+### Before
+
+```text
+Controller
+   │
+   ├── Business Logic
+   │
+   └── try/catch
+```
+
+### After
+
+```text
+Controller
+   │
+   └── Business Logic
+            │
+            ▼
+       throw error
+            │
+            ▼
+    Global Error Middleware
+```
+
+This keeps controllers cleaner and makes error handling consistent.
+
+---
+
+# Error Middleware
+
+## 6. Error Middleware Signature
+
+Normal Express middleware:
+
+```ts
+(req, res, next)
+```
+
+Error-handling middleware:
+
+```ts
+(error, req, res, next)
+```
+
+The additional first parameter is the error.
+
+Express recognizes the four-parameter signature as an error-handling middleware.
+
+### Normal Middleware
+
+```text
+(req, res, next)
+```
+
+### Error Middleware
+
+```text
+(error, req, res, next)
+   ↑
+error parameter
+```
+
+The position of `error` is important.
+
+---
+
+## 7. Why `next` Is Present
+
+Even if our error handler doesn't directly use `next`, we keep:
+
+```ts
+(error, req, res, next)
+```
+
+because this is the expected Express error-handling middleware signature.
+
+Example:
+
+```ts
+export const errorHandler = (
+    error: unknown,
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    // error handling logic
+};
+```
+
+The four parameters tell Express:
+
+> "This middleware is an error-handling middleware."
+
+---
+
+# TypeScript Error Handling
+
+## 8. Why `error: unknown`?
+
+We cannot assume that every error is an `AppError`.
+
+The application could encounter:
+
+```text
+AppError
+Error
+TypeError
+SyntaxError
+ReferenceError
+...
+```
+
+Therefore:
+
+```ts
+error: unknown
+```
+
+is safer.
+
+### Why not `AppError`?
+
+Because this would incorrectly assume that every possible error is an `AppError`:
+
+```ts
+error: AppError
+```
+
+But errors can come from many different sources.
+
+For example:
+
+```text
+Database error
+    ↓
+Error
+
+Invalid JavaScript operation
+    ↓
+TypeError
+
+Invalid syntax
+    ↓
+SyntaxError
+
+Our business logic
+    ↓
+AppError
+```
+
+Therefore:
+
+```ts
+error: unknown
+```
+
+is the safer approach.
+
+---
+
+## 9. `instanceof`
+
+We check:
+
+```ts
+if (error instanceof AppError) {
+    ...
+}
+```
+
+This performs **type narrowing**.
+
+Before:
+
+```text
+error → unknown
+```
+
+After checking:
+
+```ts
+error instanceof AppError
+```
+
+TypeScript understands inside the block that:
+
+```text
+error → AppError
+```
+
+Therefore, we can safely access:
+
+```ts
+error.message
+error.statusCode
+```
+
+### Concept
+
+```text
+error
+  │
+  ▼
+unknown
+  │
+  │ instanceof AppError
+  ▼
+AppError
+  │
+  ├── message
+  └── statusCode
+```
+
+---
+
+# Error Handler Logic
+
+The overall logic is:
+
+```text
+Error
+  ↓
+Is it AppError?
+  ├── YES → use statusCode + message
+  │
+  └── NO  → 500 Internal Server Error
+```
+
+### Business Error
+
+Example:
+
+```text
+409 Conflict
+User already exists
+```
+
+This is an expected application/business error.
+
+### Unexpected Error
+
+Example:
+
+```text
+500 Internal Server Error
+```
+
+This represents an unexpected server-side failure.
+
+---
+
+## Example Error Handling Logic
+
+Conceptually:
+
+```ts
+if (error instanceof AppError) {
+    return res.status(error.statusCode).json({
+        message: error.message
+    });
+}
+
+return res.status(500).json({
+    message: "Internal Server Error"
+});
+```
+
+### Flow
+
+```text
+                    Error
+                      │
+                      ▼
+             instanceof AppError?
+                  /       \
+                YES        NO
+                 │          │
+                 ▼          ▼
+          statusCode       500
+          + message        +
+                            "Internal Server Error"
+```
+
+---
+
+# Middleware Order
+
+## 10. Application Middleware Order
+
+The application follows this order:
+
+```ts
+app.use(express.json());
+
+app.use("/api/v1", router);
+
+app.use(errorHandler);
+```
+
+The order is important.
+
+### Normal Request Flow
+
+```text
+Client
+  ↓
+express.json()
+  ↓
+Routes
+  ↓
+Controller
+  ↓
+Service
+  ↓
+Repository
+  ↓
+Database
+```
+
+### Error Flow
+
+```text
+Service
+  ↓
+throw AppError
+  ↓
+Express
+  ↓
+Global Error Middleware
+  ↓
+Client
+```
+
+The error handler is registered **after the routes**.
+
+---
+
+## Why Must Error Middleware Come Last?
+
+Express processes middleware in the order it is registered.
+
+Therefore:
+
+```ts
+app.use(express.json());
+
+app.use("/api/v1", router);
+
+app.use(errorHandler);
+```
+
+means:
+
+```text
+1. Parse JSON
+        ↓
+2. Process routes
+        ↓
+3. If an error reaches Express
+        ↓
+4. Global error handler
+```
+
+If a route throws an error:
+
+```text
+Route
+  ↓
+throw AppError
+  ↓
+Express
+  ↓
+errorHandler
+```
+
+---
+
+# Express 5
+
+## 11. Express Version
+
+Project version:
+
+```text
+Express 5.2.1
+```
+
+Express 5 automatically forwards rejected promises/errors from async route handlers to the error-handling middleware.
+
+Therefore, we don't need an `asyncHandler` wrapper **just for async error forwarding**.
+
+### Flow
+
+```text
+Async Controller
+      ↓
+Promise rejected / Error thrown
+      ↓
+Express 5
+      ↓
+Error Middleware
+```
+
+### Important
+
+This does not mean that all errors magically disappear.
+
+It means Express 5 handles the forwarding of errors from asynchronous route handlers to the error middleware.
+
+---
+
+# Controller Refactoring
+
+## 12. Removing `try/catch` From Controllers
+
+After implementing the global error handler, the controller no longer needs:
+
+```ts
+try {
+    ...
+} catch (error) {
+    ...
+}
+```
+
+for the purpose of forwarding errors to the global handler.
+
+The controller's responsibility becomes:
+
+```text
+Receive Request
+      ↓
+Call Service
+      ↓
+Return Success Response
+```
+
+Errors are handled centrally by the global error middleware.
+
+---
+
+## Controller Responsibility
+
+```text
+Controller
+│
+├── Receive request
+│
+├── Extract required data
+│
+├── Call service
+│
+└── Return response
+```
+
+The controller does **not** import `errorHandler`.
+
+### Architecture
+
+```text
+Controller
+     │
+     ▼
+Service
+     │
+     ├── Success → Controller → Response
+     │
+     └── Error → Express → Global Error Middleware
+```
+
+---
+
+# Login Module Started
+
+After completing the Register API and global error handling, we started the Login API.
+
+## 13. Login Flow
+
+```text
+Client
+  ↓
+Controller
+  ↓
+Service
+  ↓
+existingUser(email)
+  ↓
+Fetch User
+  ↓
+Get Stored Password Hash
+  ↓
+bcrypt.compare()
+  ↓
+Password Correct?
+```
+
+More detailed flow:
+
+```text
+Login Request
+      │
+      ▼
+Login Controller
+      │
+      ▼
+Login Service
+      │
+      ▼
+Find User by Email
+      │
+      ▼
+User Found?
+      │
+      ▼
+Get Stored Password Hash
+      │
+      ▼
+bcrypt.compare()
+      │
+      ▼
+Password Correct?
+```
+
+---
+
+# `bcrypt.hash()` vs `bcrypt.compare()`
+
+## 14. Registration
+
+During registration:
+
+```text
+Plain Password
+      ↓
+bcrypt.hash()
+      ↓
+Hashed Password
+      ↓
+Database
+```
+
+Example:
+
+```text
+Kaushika123
+     ↓
+bcrypt.hash()
+     ↓
+$2b$10$........
+     ↓
+PostgreSQL
+```
+
+The original password is not stored in the database.
+
+---
+
+## 15. Login
+
+During login:
+
+```text
+Plain Password
+      ↓
+bcrypt.compare()
+      ↓
+Stored Hash
+      ↓
+true / false
+```
+
+Example:
+
+```text
+Entered Password
+      ↓
+Kaushika123
+
+Stored Password Hash
+      ↓
+$2b$10$abc........
+```
+
+Then:
+
+```ts
+bcrypt.compare(
+    enteredPassword,
+    storedPasswordHash
+);
+```
+
+returns:
+
+```text
+true  → Correct password
+false → Incorrect password
+```
+
+---
+
+# Important bcrypt Concept
+
+> [!important]  
+> **`bcrypt.compare()` does NOT decrypt the stored password.**
+
+It does **not** do:
+
+```text
+Hash
+ ↓
+Decrypt
+ ↓
+Plain Password
+```
+
+Instead, bcrypt verifies whether the supplied plaintext password corresponds to the stored bcrypt hash.
+
+### Correct Mental Model
+
+```text
+Entered Password
+      │
+      ▼
+bcrypt.compare()
+      │
+      │
+Stored Hash ──────┘
+      │
+      ▼
+Verification
+      │
+   ┌──┴──┐
+   ▼     ▼
+ true   false
+```
+
+The stored password hash is never converted back into the original plaintext password.
+
+---
+
+# Example: Login Password Verification
+
+Suppose the user registered with:
+
+```text
+email: kaushika@gmail.com
+password: Kaushika123
+```
+
+## During Registration
+
+```text
+Kaushika123
+      ↓
+bcrypt.hash()
+      ↓
+$2b$10$abc........
+      ↓
+Database
+```
+
+The database stores:
+
+```text
+$2b$10$abc........
+```
+
+It does **not** store:
+
+```text
+Kaushika123
+```
+
+---
+
+## During Login
+
+The user sends:
+
+```text
+email: kaushika@gmail.com
+password: Kaushika123
+```
+
+Repository finds the user:
+
+```text
+email: kaushika@gmail.com
+password: $2b$10$abc........
+```
+
+The Service now has two values:
+
+```text
+Entered Password
+      ↓
+Kaushika123
+
+Stored Password Hash
+      ↓
+$2b$10$abc........
+```
+
+Then:
+
+```ts
+bcrypt.compare(
+    enteredPassword,
+    storedPasswordHash
+);
+```
+
+returns:
+
+```text
+true
+```
+
+because the entered password matches the stored hash.
+
+---
+
+# bcrypt Salt
+
+## 16. Why Same Password Can Produce Different Hashes
+
+The same password can produce different bcrypt hashes:
+
+```text
+Password: 123456
+
+Hash #1 → $2b$10$AAA...
+Hash #2 → $2b$10$BBB...
+```
+
+This happens because bcrypt uses a **random salt**.
+
+### Concept
+
+```text
+Same Password
+      │
+      ├──────────────┐
+      ▼              ▼
+ Random Salt #1   Random Salt #2
+      │              │
+      ▼              ▼
+   bcrypt          bcrypt
+      │              │
+      ▼              ▼
+   Hash #1         Hash #2
+```
+
+Therefore:
+
+```text
+Same password
+      ≠
+Same bcrypt hash
+```
+
+---
+
+## Why Not Hash Again During Login?
+
+We should not simply do:
+
+```text
+Login Password
+      ↓
+bcrypt.hash()
+      ↓
+New Hash
+      ↓
+Compare with stored hash
+```
+
+because a new random salt would normally produce a different hash.
+
+Instead, use:
+
+```text
+Login Password
+      +
+Stored Hash
+      ↓
+bcrypt.compare()
+      ↓
+true / false
+```
+
+---
+
+# Main Difficulties We Faced
+
+## Difficulty 1 — Understanding `AppError`
+
+### Question
+
+Why not just use:
+
+```ts
+Error
+```
+
+?
+
+### Understanding
+
+Normal `Error` provides error information such as the message.
+
+Our application also needs an HTTP status code.
+
+`AppError` allows us to carry:
+
+```text
+message + statusCode
+```
+
+together.
+
+Example:
+
+```text
+AppError
+├── message: "User already exists"
+└── statusCode: 409
+```
+
+---
+
+## Difficulty 2 — Understanding `super()`
+
+We had to understand why:
+
+```ts
+super(message);
+```
+
+is required when extending the built-in `Error` class.
+
+### Understanding
+
+```text
+AppError
+   ↓
+extends Error
+   ↓
+super(message)
+   ↓
+parent Error constructor
+```
+
+`super()` initializes the inherited part of the object.
+
+---
+
+## Difficulty 3 — Understanding `this`
+
+Understanding:
+
+```ts
+this.statusCode = statusCode;
+```
+
+where:
+
+```text
+statusCode
+→ constructor parameter
+
+this.statusCode
+→ property of the current object
+```
+
+Example:
+
+```ts
+new AppError("User already exists", 409);
+```
+
+Conceptually:
+
+```text
+Current AppError Object
+├── message: "User already exists"
+└── statusCode: 409
+```
+
+---
+
+## Difficulty 4 — Understanding `instanceof`
+
+Why not simply write:
+
+```ts
+error: AppError
+```
+
+?
+
+Because not every error is necessarily an `AppError`.
+
+Instead:
+
+```ts
+error: unknown
+```
+
+Then:
+
+```ts
+error instanceof AppError
+```
+
+allows us to determine whether the error is specifically an `AppError`.
+
+### Flow
+
+```text
+unknown error
+      ↓
+instanceof AppError?
+      │
+   ┌──┴──┐
+   ▼     ▼
+  YES    NO
+   │      │
+   ▼      ▼
+AppError  Unknown Error
+```
+
+---
+
+## Difficulty 5 — Understanding Global Error Middleware
+
+Initially, errors were handled inside controllers.
+
+We changed the architecture to:
+
+```text
+Service
+  ↓
+throw AppError
+  ↓
+Express
+  ↓
+Global Error Middleware
+  ↓
+Response
+```
+
+### Benefit
+
+Instead of repeating error handling in every controller:
+
+```text
+Controller 1 → try/catch
+Controller 2 → try/catch
+Controller 3 → try/catch
+Controller 4 → try/catch
+```
+
+we now have:
+
+```text
+All Controllers
+      ↓
+Global Error Middleware
+```
+
+This makes the architecture cleaner and more maintainable.
+
+---
+
+## Difficulty 6 — Understanding Middleware Order
+
+Correct order:
+
+```text
+express.json()
+      ↓
+routes
+      ↓
+errorHandler
+```
+
+In code:
+
+```ts
+app.use(express.json());
+
+app.use("/api/v1", router);
+
+app.use(errorHandler);
+```
+
+The error handler is registered once after the routes.
+
+### Why?
+
+Express processes middleware in order.
+
+```text
+Request
+  ↓
+express.json()
+  ↓
+router
+  ↓
+errorHandler
+```
+
+---
+
+## Difficulty 7 — Understanding `bcrypt.compare()`
+
+### Main Confusion
+
+> How can `Kaushika123` be compared with `$2b$10$...`?
+
+### Understanding
+
+`bcrypt.compare()` does **not decrypt** the hash.
+
+It verifies the supplied password against the stored bcrypt hash using the information contained in the hash.
+
+```text
+Entered Password
+      +
+Stored bcrypt hash
+      ↓
+bcrypt.compare()
+      ↓
+Verification
+      ↓
+true / false
+```
+
+---
+
+# Key Takeaways
+
+|Concept|Purpose|
+|---|---|
+|`AppError`|Custom application/business error|
+|`extends Error`|Error inheritance|
+|`super()`|Initialize parent `Error`|
+|`this`|Access current object|
+|`instanceof`|Check error type + type narrowing|
+|`unknown`|Safely type unknown errors|
+|Error Middleware|Centralized error handling|
+|`app.use()`|Register middleware/routes|
+|Express 5|Automatic async error forwarding|
+|`bcrypt.hash()`|Hash password during registration|
+|`bcrypt.compare()`|Verify password during login|
+|Salt|Makes bcrypt hashes different even for the same password|
+
+---
+
+# Final Architecture
+
+## Complete Backend Flow
+
+```text
+                         CLIENT
+                           │
+                           ▼
+                    express.json()
+                           │
+                           ▼
+                         ROUTES
+                           │
+                           ▼
+                      CONTROLLER
+                           │
+                           ▼
+                        SERVICE
+                    Business Logic
+                           │
+                           ▼
+                      REPOSITORY
+                    Database Logic
+                           │
+                           ▼
+                       PostgreSQL
+```
+
+---
+
+# Error Flow
+
+```text
+                         CLIENT
+                           │
+                           ▼
+                         ROUTE
+                           │
+                           ▼
+                      CONTROLLER
+                           │
+                           ▼
+                        SERVICE
+                           │
+                           │
+                     throw AppError
+                           │
+                           ▼
+                        Express 5
+                           │
+                           ▼
+               Global Error Middleware
+                           │
+                    ┌──────┴──────┐
+                    ▼             ▼
+                AppError      Other Error
+                    │             │
+                    ▼             ▼
+             statusCode +       500
+                message          │
+                    │             │
+                    └──────┬──────┘
+                           ▼
+                         CLIENT
+```
+
+---
+
+# Login Flow
+
+```text
+                         CLIENT
+                           │
+                           │
+                    email + password
+                           │
+                           ▼
+                    Login Controller
+                           │
+                           ▼
+                     Login Service
+                           │
+                           ▼
+                  Find User by Email
+                           │
+                           ▼
+                    User Found?
+                           │
+                           ▼
+                Get Stored Password Hash
+                           │
+                           ▼
+                    bcrypt.compare()
+                           │
+                           ▼
+                  Password Correct?
+                      /           \
+                    YES            NO
+                     │              │
+                     ▼              ▼
+              Generate JWT      401 Error
+                     │
+                     ▼
+               Access Token
+                     │
+                     ▼
+              Login Response
+```
+
+---
+
+# Registration vs Login Password Flow
+
+## Registration
+
+```text
+User Password
+      │
+      ▼
+bcrypt.hash()
+      │
+      ▼
+Password Hash
+      │
+      ▼
+Database
+```
+
+## Login
+
+```text
+User Password
+      │
+      │
+      ├──────────────┐
+      │              │
+      ▼              ▼
+Entered Password   Stored Hash
+      │              │
+      └──────┬───────┘
+             ▼
+      bcrypt.compare()
+             │
+         ┌───┴───┐
+         ▼       ▼
+       true     false
+         │       │
+         ▼       ▼
+      Login    401 Error
+```
+
+---
+
+# What We Learned on 7 August 2026
+
+### Backend Architecture
+
+- How to create a custom `AppError`.
+    
+- How inheritance works using `extends`.
+    
+- Why `super()` is required when extending `Error`.
+    
+- How `this` refers to the current object.
+    
+- How to implement centralized/global error handling.
+    
+- How Express identifies error middleware using four parameters.
+    
+- Why `error` should be typed as `unknown`.
+    
+- How `instanceof` performs runtime checking and TypeScript type narrowing.
+    
+- Why error middleware should be registered after routes.
+    
+- How Express 5 forwards rejected promises/errors from async route handlers.
+    
+- Why controllers can be kept clean without repetitive `try/catch` blocks.
+    
+
+### Authentication
+
+- Started implementing the Login API.
+    
+- Understood the difference between `bcrypt.hash()` and `bcrypt.compare()`.
+    
+- Learned that bcrypt hashes cannot be decrypted to retrieve the original password.
+    
+- Understood how password verification works.
+    
+- Learned why bcrypt uses salts.
+    
+- Understood why hashing the login password again is not the correct verification method.
+    
+- Learned that `bcrypt.compare()` should be used to verify login passwords.
+    
+
+---
+
+# 🚀 Next Session
+
+## JWT Authentication
+
+Next major topic:
+
+```text
+bcrypt.compare()
+       ↓
+Successful Login
+       ↓
+JWT Generation
+       ↓
+Access Token
+       ↓
+Login Response
+```
+
+### Expected Login Architecture
+
+```text
+Login Request
+      ↓
+Find User
+      ↓
+Verify Password
+      ↓
+bcrypt.compare()
+      ↓
+Password Correct?
+      │
+      ▼
+Generate JWT
+      │
+      ▼
+Access Token
+      │
+      ▼
+Send Token to Client
+```
+
+> [!note]  
+> **Next major topic: JWT Authentication**
+
+---
+
+# Session Summary
+
+> [!success]  
+> **7 August 2026 — Completed**
+> 
+> - Custom `AppError`
+>     
+> - Global Error Middleware
+>     
+> - TypeScript `unknown` + `instanceof`
+>     
+> - Express middleware ordering
+>     
+> - Express 5 async error handling
+>     
+> - Controller error-handling refactoring
+>     
+> - Login API fundamentals
+>     
+> - `bcrypt.hash()`
+>     
+> - `bcrypt.compare()`
+>     
+> - bcrypt salts
+>     
+> - Password verification fundamentals
+>     
+
+> [!tip]  
+> **Next:** Implement JWT generation after successful password verification and complete the Login API.
