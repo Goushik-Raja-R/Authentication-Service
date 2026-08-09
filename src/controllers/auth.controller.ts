@@ -1,6 +1,6 @@
 import type {Request,Response} from 'express';
 
-import { ServiceResgister } from '../services/auth.service.js';
+import { ServiceResgister,ServiceLogin } from '../services/auth.service.js';
 
 export const register = async (req:Request,res:Response) =>{
             const user = req.body;
@@ -10,6 +10,16 @@ export const register = async (req:Request,res:Response) =>{
                     message:"User Created Successfully",
                     data:result
                 })
+}
+
+export const login = async(req:Request,res:Response) =>{
+            const user = req.body;
+            const result = await ServiceLogin(user)
+
+            return res.status(200).json({
+                message:"User Successfully logged in",
+                data:result
+            })
 }
 
 // if the user return the value line 11 will get executed 
