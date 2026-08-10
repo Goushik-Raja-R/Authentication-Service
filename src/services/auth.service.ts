@@ -56,7 +56,7 @@ export const ServiceLogin = async(user:User)=>{
             return token;
 
         }else{
-            throw new AppError("Unauthorized User",401);
+            throw new AppError("Unauthorized User",403);
         }
 
 }

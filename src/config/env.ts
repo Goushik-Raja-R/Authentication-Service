@@ -9,6 +9,7 @@ const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD;
 const JWT_SECRET = process.env.JWT_SECRET;
 
+
 if(!PORT || !DB_HOST || !DB_PORT  || !DB_NAME  || !DB_USER  || !DB_PASSWORD || !JWT_SECRET){
      console.error("One or more required environment variables are missing.");
      process.exit(1);
