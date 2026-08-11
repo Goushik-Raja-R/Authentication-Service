@@ -22,6 +22,15 @@ export const login = async(req:Request,res:Response) =>{
             })
 }
 
+export const profile = async(req:Request,res:Response)=>{
+            const user = req.body;
+
+            return res.status(200).json({
+                message:"User Profile",
+                data:req.user
+            })
+}
+
 // if the user return the value line 11 will get executed 
 
 // or if the user throws user already exist it will go to catch block which is in line 18 and check if the serice sended error is instance of app error or not if yes it will execute Apperror return status and message
