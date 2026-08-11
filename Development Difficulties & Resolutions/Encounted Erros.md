@@ -4741,3 +4741,1132 @@ jwt.verify(token, JWT_SECRET_KEY)
 
 > [!note]  
 > **Next major topic: JWT Authentication Middleware → Protected Routes → Accessing the Authenticated User**
+
+---
+
+# Backend Authentication Service — 11 August 2026
+
+> [!summary]  
+> **Session Focus:** JWT Authentication Middleware + Protected Routes
+
+---
+
+# 🏁 End of Session — 11 August 2026
+
+Today was a **big session**.
+
+We completed the **JWT Authentication Middleware** and successfully protected an API route using JWT authentication.
+
+This means the backend now has a working authentication flow from:
+
+```text
+Login
+  ↓
+JWT Generation
+  ↓
+Authorization Header
+  ↓
+Authentication Middleware
+  ↓
+JWT Verification
+  ↓
+req.user
+  ↓
+Protected API
+```
+
+---
+
+# ✅ What We Completed
+
+```text
+JWT Generation                         ✅
+JWT Expiration                         ✅
+JWT Secret from .env                   ✅
+JWT Authentication Middleware          ✅
+Authorization Header                   ✅
+Bearer Token Extraction                ✅
+JWT Verification                       ✅
+401 Unauthorized Handling              ✅
+Express Request Type Extension         ✅
+req.user                               ✅
+Protected Route                        ✅
+Valid JWT → API access                 ✅
+Invalid JWT → 401 Unauthorized         ✅
+```
+
+---
+
+# 🔐 JWT Authentication Middleware
+
+The main achievement today was completing the authentication middleware.
+
+The middleware is responsible for checking whether an incoming request contains a valid JWT.
+
+The overall flow is:
+
+```text
+Client
+  ↓
+Authorization: Bearer <JWT>
+  ↓
+Authentication Middleware
+  ↓
+Extract Token
+  ↓
+jwt.verify()
+  ↓
+Valid?
+ ├── YES → req.user → next()
+ │
+ └── NO  → 401 Unauthorized
+```
+
+---
+
+# 🧠 Concepts Learned
+
+## 1. Authorization Header
+
+The client sends the JWT through the HTTP `Authorization` header.
+
+The format is:
+
+```http
+Authorization: Bearer <JWT>
+```
+
+Example:
+
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+The structure is:
+
+```text
+Authorization
+      ↓
+Bearer <JWT>
+```
+
+---
+
+## 🔍 Bearer Token Extraction
+
+The middleware needs to extract the actual JWT from:
+
+```text
+Bearer <JWT>
+```
+
+We learned how to use:
+
+```ts
+split(" ")
+```
+
+Conceptually:
+
+```text
+Header
+  ↓
+"Bearer <JWT>"
+  ↓
+split(" ")
+  ↓
+[ "Bearer", "<JWT>" ]
+  ↓
+token = [1]
+  ↓
+<JWT>
+```
+
+### Example
+
+```text
+"Bearer abc123"
+       ↓
+split(" ")
+       ↓
+["Bearer", "abc123"]
+       ↓
+       [1]
+       ↓
+"abc123"
+```
+
+The first element is:
+
+```text
+[0] → "Bearer"
+```
+
+The second element is:
+
+```text
+[1] → JWT
+```
+
+---
+
+# 2. `jwt.verify()`
+
+The extracted JWT is passed to:
+
+```ts
+jwt.verify(token, JWT_SECRET_KEY)
+```
+
+Conceptually:
+
+```text
+JWT + JWT_SECRET_KEY
+        ↓
+   jwt.verify()
+        ↓
+ ┌──────┴──────┐
+ ▼             ▼
+Valid       Invalid/Expired
+ │             │
+ ▼             ▼
+Decoded       Error
+Payload
+```
+
+---
+
+## What Happens When the JWT Is Valid?
+
+If the JWT is valid:
+
+```text
+JWT
+ ↓
+jwt.verify()
+ ↓
+Decoded Payload
+```
+
+For example:
+
+```json
+{
+  "userId": 5
+}
+```
+
+The middleware can then use this information to identify the authenticated user.
+
+---
+
+## What Happens When the JWT Is Invalid?
+
+If the JWT is:
+
+- Invalid
+    
+- Tampered with
+    
+- Expired
+    
+- Signed with the wrong secret
+    
+
+then verification fails.
+
+Conceptually:
+
+```text
+Invalid JWT
+    ↓
+jwt.verify()
+    ↓
+Error
+    ↓
+401 Unauthorized
+```
+
+---
+
+# ⚠️ Important JWT Verification Concept
+
+We **do not manually split the JWT into its three sections and verify the signature ourselves**.
+
+We do **not** manually perform:
+
+```text
+JWT
+ ↓
+Split into:
+ ├── Header
+ ├── Payload
+ └── Signature
+       ↓
+Manually compare signature
+       ↓
+Secret
+```
+
+Instead, the `jsonwebtoken` library handles the cryptographic verification.
+
+We simply use:
+
+```ts
+jwt.verify(token, JWT_SECRET_KEY)
+```
+
+### Correct Mental Model
+
+```text
+Received JWT
+      +
+JWT_SECRET_KEY
+      ↓
+jwt.verify()
+      ↓
+jsonwebtoken performs verification
+      ↓
+Valid → decoded payload
+Invalid → error
+```
+
+---
+
+# 3. `express.d.ts`
+
+Another important concept learned today was **TypeScript declaration merging**.
+
+We needed Express's `Request` object to understand:
+
+```ts
+req.user
+```
+
+By default, Express's `Request` type doesn't know about our custom `user` property.
+
+So we extended it.
+
+Conceptually:
+
+```text
+Express Request
+      +
+user?: AuthUser
+      ↓
+Extended Express Request
+      ↓
+req.user is now recognized by TypeScript
+```
+
+---
+
+# 🧩 Declaration Merging
+
+The idea is:
+
+```text
+Existing Express Request
+        │
+        │ declaration merging
+        ▼
+Extended Request
+        │
+        └── user?: AuthUser
+```
+
+This allows TypeScript to understand:
+
+```ts
+req.user
+```
+
+instead of reporting an error such as:
+
+```text
+Property 'user' does not exist on type 'Request'
+```
+
+---
+
+# ⚠️ Important Distinction
+
+One of the most important concepts learned today:
+
+```text
+express.d.ts
+    ↓
+TypeScript information only
+```
+
+while:
+
+```text
+auth.middleware.ts
+    ↓
+Actual runtime behavior
+```
+
+These are two completely different responsibilities.
+
+---
+
+## `express.d.ts`
+
+Responsible for telling TypeScript:
+
+> "`Request` objects can have a `user` property."
+
+Conceptually:
+
+```text
+TypeScript
+    ↓
+Knows about req.user
+```
+
+It does **not** actually create the property at runtime.
+
+---
+
+## `auth.middleware.ts`
+
+Responsible for actually creating/assigning the property:
+
+```text
+JWT
+ ↓
+verify
+ ↓
+decoded payload
+ ↓
+req.user = ...
+```
+
+So:
+
+```text
+express.d.ts
+    ↓
+Compile-time/type information
+
+auth.middleware.ts
+    ↓
+Runtime behavior
+```
+
+---
+
+# 4. `req.user`
+
+We learned an important distinction about where `req.user` comes from.
+
+The client sends:
+
+```text
+Authorization: Bearer JWT
+```
+
+The client does **not** send:
+
+```text
+req.user
+```
+
+Instead, the authentication middleware creates it after successfully verifying the JWT.
+
+The flow is:
+
+```text
+Client
+    ↓
+Authorization: Bearer JWT
+    ↓
+Authentication Middleware
+    ↓
+jwt.verify()
+    ↓
+Decoded Payload
+    ↓
+req.user = { userId: 5 }
+    ↓
+next()
+    ↓
+Controller
+```
+
+---
+
+# 🔑 Trusted User Identity
+
+This is an important security concept.
+
+The authenticated identity should come from the **verified JWT**, not directly from client-controlled request data.
+
+For example, we should not trust:
+
+```text
+req.body.userId
+```
+
+to determine who is authenticated.
+
+Instead:
+
+```text
+JWT
+ ↓
+jwt.verify()
+ ↓
+decoded userId
+ ↓
+req.user.userId
+```
+
+The middleware establishes the authenticated identity.
+
+---
+
+# Example
+
+Suppose the JWT payload contains:
+
+```json
+{
+  "userId": 5
+}
+```
+
+After successful verification:
+
+```text
+JWT
+ ↓
+jwt.verify()
+ ↓
+{ userId: 5 }
+ ↓
+req.user = { userId: 5 }
+ ↓
+next()
+```
+
+The controller can then access:
+
+```text
+req.user.userId
+```
+
+---
+
+# 5. Protected Routes
+
+We successfully created and tested a protected API route.
+
+The route flow is:
+
+```text
+POST /profile
+       ↓
+authMiddleware
+       ↓
+JWT Verification
+       ↓
+Valid JWT
+       ↓
+Controller
+       ↓
+User Profile
+```
+
+---
+
+# ✅ Valid JWT Test
+
+When a valid JWT is provided:
+
+```text
+POST /profile
+       ↓
+Authorization: Bearer <valid JWT>
+       ↓
+authMiddleware
+       ↓
+jwt.verify()
+       ↓
+Valid
+       ↓
+next()
+       ↓
+Controller
+       ↓
+User Profile
+```
+
+Result:
+
+```text
+User Profile ✅
+```
+
+---
+
+# ❌ Invalid JWT Test
+
+When an invalid JWT is provided:
+
+```text
+POST /profile
+       ↓
+Authorization: Bearer <invalid JWT>
+       ↓
+authMiddleware
+       ↓
+jwt.verify()
+       ↓
+Invalid
+       ↓
+401 Unauthorized
+```
+
+Result:
+
+```text
+401 Unauthorized ✅
+```
+
+The request does not continue to the controller.
+
+---
+
+# 🛡️ Protected Route Architecture
+
+The current protected route architecture is:
+
+```text
+Client
+  ↓
+Route
+  ↓
+Authentication Middleware
+  ↓
+Extract Bearer Token
+  ↓
+jwt.verify()
+  ↓
+Valid?
+  │
+  ├── NO
+  │    ↓
+  │   401 Unauthorized
+  │
+  └── YES
+       ↓
+    req.user
+       ↓
+     next()
+       ↓
+   Controller
+       ↓
+    Service
+       ↓
+  Repository
+       ↓
+  PostgreSQL
+```
+
+---
+
+# ⚠️ One Thing To Fix Next Session
+
+The current Profile Controller uses:
+
+```ts
+req.body
+```
+
+However, the authenticated user's identity should come from:
+
+```ts
+req.user
+```
+
+because `req.user` was established by our trusted JWT verification.
+
+---
+
+# Current Profile Flow
+
+Currently:
+
+```text
+Profile Request
+      ↓
+req.body
+      ↓
+Profile Controller
+```
+
+We need to change it to:
+
+```text
+Profile Request
+      ↓
+Authentication Middleware
+      ↓
+JWT Verification
+      ↓
+req.user.userId
+      ↓
+Profile Controller
+      ↓
+Profile Service
+      ↓
+Profile Repository
+      ↓
+PostgreSQL
+```
+
+---
+
+# 🔄 Updated Profile Architecture
+
+The desired flow is:
+
+```text
+Client
+  ↓
+GET /profile
+  ↓
+Authorization: Bearer <JWT>
+  ↓
+authMiddleware
+  ↓
+jwt.verify()
+  ↓
+req.user = { userId: 5 }
+  ↓
+next()
+  ↓
+profileController
+  ↓
+req.user.userId
+  ↓
+profileService
+  ↓
+profileRepository
+  ↓
+PostgreSQL
+  ↓
+Profile Response
+```
+
+---
+
+# GET vs POST for Profile
+
+The current `/profile` endpoint is using:
+
+```text
+POST /profile
+```
+
+We will change this to:
+
+```text
+GET /profile
+```
+
+because the operation is retrieving profile information.
+
+### Concept
+
+```text
+GET
+ ↓
+Retrieve data
+```
+
+Therefore:
+
+```http
+GET /profile
+```
+
+is more appropriate for retrieving the authenticated user's profile.
+
+---
+
+# 🧠 Why `req.user` Instead of `req.body`?
+
+Consider a malicious client sending:
+
+```json
+{
+  "userId": 100
+}
+```
+
+If the backend trusts:
+
+```text
+req.body.userId
+```
+
+the client could potentially request another user's data.
+
+Instead, the backend should use the identity established by authentication:
+
+```text
+JWT
+ ↓
+Verified
+ ↓
+req.user.userId
+```
+
+Therefore:
+
+> [!important]  
+> **The authenticated user's identity should come from the verified JWT, not from arbitrary client-provided request data.**
+
+---
+
+# 🏆 Today's Progress
+
+Yesterday we had:
+
+```text
+Login
+  ↓
+JWT Generation
+```
+
+Today we went all the way to:
+
+```text
+Login
+  ↓
+JWT
+  ↓
+Authorization Header
+  ↓
+Authentication Middleware
+  ↓
+Bearer Token Extraction
+  ↓
+JWT Verification
+  ↓
+req.user
+  ↓
+Protected API
+```
+
+---
+
+# 🔥 Complete Authentication Flow So Far
+
+```text
+                         CLIENT
+                            │
+                            ▼
+                       LOGIN REQUEST
+                            │
+                            ▼
+                       CONTROLLER
+                            │
+                            ▼
+                         SERVICE
+                            │
+                            ▼
+                    Find User by Email
+                            │
+                            ▼
+                    bcrypt.compare()
+                            │
+                     ┌──────┴──────┐
+                     │             │
+                   false          true
+                     │             │
+                     ▼             ▼
+                  401 Error     jwt.sign()
+                                   │
+                                   ▼
+                                  JWT
+                                   │
+                                   ▼
+                                CLIENT
+                                   │
+                                   │
+                 Authorization: Bearer <JWT>
+                                   │
+                                   ▼
+                       PROTECTED REQUEST
+                                   │
+                                   ▼
+                       Authentication
+                          Middleware
+                                   │
+                                   ▼
+                             Extract Token
+                                   │
+                                   ▼
+                            jwt.verify()
+                                   │
+                         ┌─────────┴─────────┐
+                         │                   │
+                       Invalid              Valid
+                         │                   │
+                         ▼                   ▼
+                  401 Unauthorized        req.user
+                                             │
+                                             ▼
+                                           next()
+                                             │
+                                             ▼
+                                         Controller
+                                             │
+                                             ▼
+                                          Service
+                                             │
+                                             ▼
+                                        Repository
+                                             │
+                                             ▼
+                                         PostgreSQL
+                                             │
+                                             ▼
+                                         Response
+```
+
+---
+
+# 🧩 Authentication Components
+
+At this point, the authentication system contains these major components:
+
+```text
+src/
+│
+├── controllers/
+│   ├── auth.controller.ts
+│   └── profile.controller.ts
+│
+├── services/
+│   ├── auth.service.ts
+│   └── profile.service.ts
+│
+├── repositories/
+│   ├── auth.repository.ts
+│   └── profile.repository.ts
+│
+├── middlewares/
+│   ├── error.middleware.ts
+│   └── auth.middleware.ts
+│
+└── types/
+    └── express.d.ts
+```
+
+> [!note]  
+> The exact folder/file structure may differ depending on the current project implementation. The important architectural concepts are the separation between middleware, controllers, services, repositories, and TypeScript type declarations.
+
+---
+
+# 📊 Authentication Progress
+
+```text
+┌────────────────────────────────────────────┐
+│        BACKEND AUTHENTICATION SERVICE      │
+├────────────────────────────────────────────┤
+│                                            │
+│ Registration                         ✅    │
+│ Password Hashing                     ✅    │
+│ Global Error Handling                ✅    │
+│ Login Validation                     ✅    │
+│ bcrypt.compare()                     ✅    │
+│ JWT Secret Configuration              ✅    │
+│ JWT Expiration                       ✅    │
+│ JWT Generation                       ✅    │
+│ JWT API Response                     ✅    │
+│ Authorization Header                 ✅    │
+│ Bearer Token Extraction              ✅    │
+│ JWT Authentication Middleware        ✅    │
+│ JWT Verification                     ✅    │
+│ 401 Unauthorized Handling            ✅    │
+│ Express Request Type Extension       ✅    │
+│ req.user                             ✅    │
+│ Protected Route                      ✅    │
+│ Valid JWT → API Access               ✅    │
+│ Invalid JWT → 401                    ✅    │
+│                                            │
+│ Profile using req.user                🚧   │
+│ GET /profile                         🚧   │
+│ Protected Profile Service            ⏳    │
+│                                            │
+└────────────────────────────────────────────┘
+```
+
+---
+
+# 🧠 Key Takeaways
+
+|Concept|What We Learned|
+|---|---|
+|`Authorization` Header|Used to send the JWT with API requests|
+|`Bearer` Token|Standard format for sending the access token|
+|`split(" ")`|Used to separate `Bearer` from the JWT|
+|`jwt.verify()`|Validates the JWT using the server secret|
+|JWT Verification|Handled cryptographically by `jsonwebtoken`|
+|`express.d.ts`|Adds TypeScript knowledge about custom Express properties|
+|Declaration Merging|Extends Express's existing `Request` type|
+|`req.user`|Contains the authenticated user's information|
+|Authentication Middleware|Verifies JWT before allowing access|
+|`next()`|Allows a valid authenticated request to continue|
+|`401 Unauthorized`|Returned when authentication fails|
+|Protected Route|API route that requires valid authentication|
+|Trusted Identity|Should come from the verified JWT|
+|`req.body`|Client-controlled input; should not determine authenticated identity|
+|`GET /profile`|Appropriate method for retrieving profile information|
+
+---
+
+# 🎯 Important Security Principle
+
+> [!important]  
+> **Never trust the client to tell you who they are.**
+> 
+> The client can send a `userId` in the request body, query parameters, or headers, but the backend should establish the authenticated identity by verifying the JWT and using the resulting `req.user`.
+
+Correct:
+
+```text
+JWT
+ ↓
+jwt.verify()
+ ↓
+req.user.userId
+ ↓
+Profile
+```
+
+Not:
+
+```text
+Client
+ ↓
+req.body.userId
+ ↓
+Profile
+```
+
+---
+
+# 📝 Session Summary
+
+> [!success]  
+> **11 August 2026 — Completed**
+> 
+> - JWT Authentication Middleware
+>     
+> - Authorization Header
+>     
+> - Bearer Token Extraction
+>     
+> - `jwt.verify()`
+>     
+> - Invalid/expired JWT handling
+>     
+> - `401 Unauthorized`
+>     
+> - Express Request Type Extension
+>     
+> - TypeScript Declaration Merging
+>     
+> - `req.user`
+>     
+> - Protected API Route
+>     
+> - Valid JWT → API access
+>     
+> - Invalid JWT → 401 Unauthorized
+>     
+
+---
+
+# 🚀 Next Session
+
+## Profile Authentication Integration
+
+Continue from:
+
+```text
+GET /profile
+      ↓
+Authorization: Bearer <JWT>
+      ↓
+authMiddleware
+      ↓
+jwt.verify()
+      ↓
+req.user
+      ↓
+profileController
+      ↓
+req.user.userId
+      ↓
+profileService
+      ↓
+profileRepository
+      ↓
+PostgreSQL
+      ↓
+Profile Response
+```
+
+### Next Tasks
+
+```text
+1. Change /profile from POST → GET
+        ↓
+2. Stop using req.body for authenticated identity
+        ↓
+3. Use req.user.userId
+        ↓
+4. Pass userId to profile service
+        ↓
+5. Fetch user from PostgreSQL
+        ↓
+6. Return authenticated user's profile
+        ↓
+7. Test with valid JWT
+        ↓
+8. Test with invalid JWT
+```
+
+---
+
+# 🫡 Session Milestone
+
+> [!success]  
+> **You now have a real working JWT authentication flow.**
+> 
+> The backend can:
+> 
+> ```text
+> Login
+>   ↓
+> Generate JWT
+>   ↓
+> Receive JWT from Client
+>   ↓
+> Extract Bearer Token
+>   ↓
+> Verify JWT
+>   ↓
+> Identify User
+>   ↓
+> Protect API Routes
+> ```
+> 
+> **Next milestone: Use the authenticated `req.user` to securely retrieve the user's profile. 🔥**
