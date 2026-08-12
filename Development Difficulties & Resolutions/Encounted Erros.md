@@ -5870,3 +5870,1162 @@ Profile Response
 > ```
 > 
 > **Next milestone: Use the authenticated `req.user` to securely retrieve the user's profile. 🔥**
+
+
+---
+
+# Backend Authentication Service — 12 August 2026
+
+> [!summary]  
+> **Session Focus:** RBAC / Authorization
+
+---
+
+# 🫡 End of Today's Session — 12 August 2026
+
+Today we moved from **Authentication → Authorization**, which is a major backend milestone.
+
+The authentication system can now identify users, and the authorization system can determine what those authenticated users are allowed to do.
+
+---
+
+# ✅ What We Completed
+
+## Authentication
+
+```text
+Authentication
+├── JWT generation                    ✅
+├── JWT expiration                    ✅
+├── JWT verification                  ✅
+├── Bearer token extraction           ✅
+└── req.user                          ✅
+```
+
+## Authorization / RBAC
+
+```text
+Authorization / RBAC
+├── User roles                        ✅
+├── USER / ADMIN roles                ✅
+├── Role in JWT                       ✅
+├── Authorization middleware          ✅
+├── ADMIN-only route                  ✅
+└── DELETE user API                   🔄 Almost complete
+```
+
+---
+
+# 🔐 Authentication vs Authorization
+
+## Authentication
+
+> **"Who are you?"**
+
+Authentication verifies the identity of the user.
+
+The current flow is:
+
+```text
+JWT
+ ↓
+verify
+ ↓
+userId + role
+ ↓
+req.user
+```
+
+More specifically:
+
+```text
+Client
+  ↓
+Authorization: Bearer <JWT>
+  ↓
+Authentication Middleware
+  ↓
+jwt.verify()
+  ↓
+Decoded JWT Payload
+  ↓
+req.user
+```
+
+Example:
+
+```text
+req.user
+   ↓
+{
+    userId: 5,
+    role: "ADMIN"
+}
+```
+
+---
+
+# 🛡️ Authorization
+
+> **"Are you allowed to perform this operation?"**
+
+Authorization happens **after authentication**.
+
+The middleware checks the authenticated user's role:
+
+```text
+req.user.role
+      ↓
+authorize("ADMIN")
+      ↓
+ ┌────┴────┐
+ ▼         ▼
+Allowed   Denied
+  │         │
+  ▼         ▼
+next()     403
+```
+
+### Example
+
+If the authenticated user is:
+
+```text
+role: ADMIN
+```
+
+and the route requires:
+
+```text
+ADMIN
+```
+
+then:
+
+```text
+ADMIN
+  ↓
+authorize("ADMIN")
+  ↓
+Allowed
+  ↓
+next()
+```
+
+But if the user is:
+
+```text
+role: USER
+```
+
+then:
+
+```text
+USER
+  ↓
+authorize("ADMIN")
+  ↓
+Permission denied
+  ↓
+403 Forbidden
+```
+
+---
+
+# 🚨 401 vs 403
+
+One of the important distinctions learned today is the difference between:
+
+```text
+401 Unauthorized
+```
+
+and:
+
+```text
+403 Forbidden
+```
+
+---
+
+## 401 Unauthorized
+
+> **Authentication failed.**
+
+The server could not establish that the request is from a valid authenticated user.
+
+Examples:
+
+```text
+Missing JWT
+Invalid JWT
+Expired JWT
+Malformed JWT
+```
+
+Flow:
+
+```text
+Request
+  ↓
+Authentication Middleware
+  ↓
+JWT invalid/missing
+  ↓
+401 Unauthorized
+```
+
+---
+
+## 403 Forbidden
+
+> **Authentication succeeded, but permission is insufficient.**
+
+The server knows who the user is, but that user is not allowed to perform the requested operation.
+
+Example:
+
+```text
+Authenticated User
+       ↓
+role = USER
+       ↓
+ADMIN-only route
+       ↓
+403 Forbidden
+```
+
+### Mental Model
+
+```text
+401
+ ↓
+"Who are you?"
+ ↓
+Authentication failed
+```
+
+```text
+403
+ ↓
+"I know who you are,
+but you aren't allowed to do this."
+ ↓
+Authorization failed
+```
+
+---
+
+# 🏗️ RBAC
+
+RBAC stands for:
+
+> **Role-Based Access Control**
+
+Instead of giving permissions individually to every user, users are assigned roles.
+
+For this project, we currently have:
+
+```text
+USER
+ADMIN
+```
+
+Conceptually:
+
+```text
+User
+ ↓
+Role
+ ↓
+Permissions
+```
+
+Example:
+
+```text
+USER
+├── View profile
+└── Update own profile
+
+ADMIN
+├── View profile
+├── Update profile
+├── Delete users
+└── Perform admin operations
+```
+
+The exact permissions will depend on the routes we define.
+
+---
+
+# 👤 User Roles
+
+We introduced roles into the authentication system.
+
+Current roles:
+
+```text
+USER
+ADMIN
+```
+
+The role is included in the JWT payload.
+
+Conceptually:
+
+```text
+JWT Payload
+│
+├── userId
+└── role
+```
+
+Example:
+
+```json
+{
+  "userId": 5,
+  "role": "ADMIN"
+}
+```
+
+---
+
+# 🎫 Role in JWT
+
+The authentication flow now carries both the user's identity and role.
+
+Previously:
+
+```text
+JWT
+ ↓
+userId
+ ↓
+req.user
+```
+
+Now:
+
+```text
+JWT
+ ↓
+userId + role
+ ↓
+req.user
+```
+
+Example:
+
+```text
+JWT Payload
+      ↓
+{
+    userId: 5,
+    role: "ADMIN"
+}
+      ↓
+Authentication Middleware
+      ↓
+req.user
+```
+
+Conceptually:
+
+```text
+req.user
+├── userId
+└── role
+```
+
+---
+
+# 🔑 Authentication + Authorization Flow
+
+The complete flow is now:
+
+```text
+Client
+  ↓
+Authorization: Bearer <JWT>
+  ↓
+Authentication Middleware
+  ↓
+jwt.verify()
+  ↓
+req.user = {
+    userId,
+    role
+}
+  ↓
+Authorization Middleware
+  ↓
+authorize("ADMIN")
+  ↓
+Is role ADMIN?
+ ├── YES → next()
+ └── NO  → 403 Forbidden
+```
+
+---
+
+# 🧩 Authorization Middleware
+
+The authorization middleware is responsible for checking whether the authenticated user has the required role.
+
+Conceptually:
+
+```text
+authorize("ADMIN")
+        ↓
+Read req.user.role
+        ↓
+Compare with required role
+        ↓
+ ┌──────┴──────┐
+ ▼             ▼
+Match        No Match
+ │              │
+ ▼              ▼
+next()       403 Forbidden
+```
+
+### Important
+
+The authorization middleware depends on authentication middleware.
+
+Why?
+
+Because:
+
+```text
+req.user
+```
+
+must already exist before we can check:
+
+```text
+req.user.role
+```
+
+Therefore, the order matters.
+
+---
+
+# 🔗 Middleware Order
+
+Correct:
+
+```text
+authMiddleware
+      ↓
+authorize("ADMIN")
+      ↓
+Controller
+```
+
+Not:
+
+```text
+authorize("ADMIN")
+      ↓
+authMiddleware
+```
+
+Because authorization needs the authenticated user's information.
+
+---
+
+# 🏗️ Architecture We Built
+
+The overall backend architecture is now:
+
+```text
+Client
+  ↓
+Route
+  ↓
+Authentication Middleware
+  ↓
+Authorization Middleware
+  ↓
+Controller
+  ↓
+Service
+  ↓
+Repository
+  ↓
+PostgreSQL
+```
+
+Each layer has a specific responsibility.
+
+---
+
+# 🔐 Authentication Middleware
+
+Responsible for:
+
+```text
+JWT
+ ↓
+Verify token
+ ↓
+Identify user
+ ↓
+Set req.user
+```
+
+---
+
+# 🛡️ Authorization Middleware
+
+Responsible for:
+
+```text
+req.user.role
+      ↓
+Check required role
+      ↓
+Allow / Deny
+```
+
+---
+
+# 🎮 Controller
+
+Responsible for:
+
+```text
+Request
+  ↓
+Call Service
+  ↓
+Return Response
+```
+
+The controller should not contain database logic.
+
+---
+
+# ⚙️ Service
+
+Responsible for:
+
+```text
+Business Logic
+```
+
+For example:
+
+```text
+Delete User
+    ↓
+Validate business rules
+    ↓
+Call Repository
+```
+
+---
+
+# 🗄️ Repository
+
+Responsible for database operations.
+
+```text
+Service
+  ↓
+Repository
+  ↓
+PostgreSQL
+```
+
+---
+
+# 🗑️ Today's Delete User Operation
+
+Today's main authorization use case was an **ADMIN-only Delete User API**.
+
+The intended flow is:
+
+```text
+DELETE /users/:id
+       ↓
+authMiddleware
+       ↓
+authorize("ADMIN")
+       ↓
+deleteUser controller
+       ↓
+ServiceDelete()
+       ↓
+userDeletion()
+       ↓
+PostgreSQL
+```
+
+---
+
+# 🔐 Why Delete User Requires ADMIN
+
+Deleting a user is a privileged operation.
+
+Therefore:
+
+```text
+DELETE /users/:id
+        ↓
+Authentication
+        ↓
+Authorization
+        ↓
+ADMIN?
+   /       \
+ YES       NO
+  ↓         ↓
+Delete     403
+```
+
+A normal `USER` should not be allowed to delete another user.
+
+---
+
+# 🧪 Delete User Request
+
+The intended API request is:
+
+```http
+DELETE /users/:id
+```
+
+For example:
+
+```http
+DELETE /users/2
+```
+
+The `2` represents the user's ID.
+
+---
+
+# 🚧 Where We Stopped
+
+The last issue we encountered was a **route parameter mismatch**.
+
+Your route was:
+
+```text
+/delete/users
+```
+
+but the API call was:
+
+```text
+/delete/users/2
+```
+
+The problem is that the route did not define the `:id` parameter.
+
+---
+
+# 🔍 Route Parameter
+
+If the controller uses:
+
+```text
+req.params.id
+```
+
+then the route needs:
+
+```text
+:id
+```
+
+Therefore:
+
+```text
+/delete/users/:id
+```
+
+matches:
+
+```text
+/delete/users/2
+```
+
+---
+
+# ❌ Current Problem
+
+Current route:
+
+```text
+/delete/users
+```
+
+Request:
+
+```text
+/delete/users/2
+```
+
+These do not match as intended.
+
+Conceptually:
+
+```text
+Route:
+DELETE /delete/users
+
+Request:
+DELETE /delete/users/2
+                    ↑
+               Extra parameter
+```
+
+---
+
+# ✅ Correct Route
+
+The route should include the parameter:
+
+```text
+/delete/users/:id
+```
+
+Then:
+
+```text
+DELETE /delete/users/2
+```
+
+matches:
+
+```text
+/delete/users/:id
+                  ↑
+                  2
+```
+
+And Express makes it available through:
+
+```text
+req.params.id
+```
+
+---
+
+# 🔄 Correct Delete Flow
+
+After fixing the route:
+
+```text
+Client
+  ↓
+DELETE /delete/users/2
+  ↓
+authMiddleware
+  ↓
+JWT Verification
+  ↓
+req.user
+  ↓
+authorize("ADMIN")
+  ↓
+Check role
+  ↓
+ADMIN?
+  ├── NO → 403 Forbidden
+  │
+  └── YES
+        ↓
+   deleteUser Controller
+        ↓
+   req.params.id
+        ↓
+   Delete User Service
+        ↓
+   User Deletion Repository
+        ↓
+   PostgreSQL
+        ↓
+   Response
+```
+
+---
+
+# 🧠 Important API Design Concept
+
+There are two different pieces of information involved in this request:
+
+### Authenticated User
+
+Who is making the request?
+
+```text
+req.user.userId
+req.user.role
+```
+
+This comes from the verified JWT.
+
+### Target User
+
+Which user should be deleted?
+
+```text
+req.params.id
+```
+
+This comes from the URL.
+
+Therefore:
+
+```text
+DELETE /users/2
+```
+
+can conceptually mean:
+
+```text
+Authenticated User
+        ↓
+req.user
+        ↓
+ADMIN
+        ↓
+wants to delete
+        ↓
+Target User
+        ↓
+req.params.id = 2
+```
+
+This distinction is extremely important.
+
+---
+
+# 🔐 Complete Authentication + Authorization Architecture
+
+```text
+                              CLIENT
+                                 │
+                                 ▼
+                    Authorization: Bearer <JWT>
+                                 │
+                                 ▼
+                         ROUTE / API
+                                 │
+                                 ▼
+                    Authentication Middleware
+                                 │
+                                 ▼
+                          jwt.verify()
+                                 │
+                         ┌───────┴───────┐
+                         │               │
+                      Invalid          Valid
+                         │               │
+                         ▼               ▼
+                    401 Error         req.user
+                                         │
+                                  ┌──────┴──────┐
+                                  │             │
+                               userId          role
+                                                │
+                                                ▼
+                                  Authorization Middleware
+                                                │
+                                       authorize("ADMIN")
+                                                │
+                                      ┌─────────┴─────────┐
+                                      │                   │
+                                    ADMIN              USER
+                                      │                   │
+                                      ▼                   ▼
+                                   next()                403
+                                      │
+                                      ▼
+                                  Controller
+                                      │
+                                      ▼
+                                   Service
+                                      │
+                                      ▼
+                                  Repository
+                                      │
+                                      ▼
+                                  PostgreSQL
+```
+
+---
+
+# 📊 Authentication vs Authorization
+
+|Feature|Authentication|Authorization|
+|---|---|---|
+|Main Question|Who are you?|What can you do?|
+|Uses JWT|✅|Uses authenticated JWT data|
+|Middleware|`authMiddleware`|`authorize()`|
+|Main Data|`userId`|`role` / permissions|
+|Failure|`401 Unauthorized`|`403 Forbidden`|
+|Example|Invalid JWT|USER accessing ADMIN route|
+|Result|`req.user` established|Request allowed/denied|
+
+---
+
+# 🧠 Key Takeaways
+
+|Concept|Purpose|
+|---|---|
+|Authentication|Verifies the user's identity|
+|Authorization|Determines whether the user has permission|
+|RBAC|Role-Based Access Control|
+|`USER`|Normal application role|
+|`ADMIN`|Privileged application role|
+|Role in JWT|Carries the user's role after authentication|
+|`req.user`|Stores authenticated user information|
+|`authMiddleware`|Verifies JWT and establishes identity|
+|`authorize("ADMIN")`|Checks whether the user has ADMIN role|
+|`401 Unauthorized`|Authentication failed|
+|`403 Forbidden`|Authentication succeeded but permission is insufficient|
+|`req.params.id`|Identifies the target resource from the URL|
+|`/users/:id`|Route pattern for resource-specific operations|
+
+---
+
+# 🏆 Today's Progress
+
+Yesterday:
+
+```text
+Login
+  ↓
+JWT
+  ↓
+Authentication Middleware
+  ↓
+JWT Verification
+  ↓
+req.user
+  ↓
+Protected API
+```
+
+Today:
+
+```text
+Authentication
+      ↓
+Authenticated User
+      ↓
+Role
+      ↓
+Authorization Middleware
+      ↓
+ADMIN-only Route
+      ↓
+Delete User API
+```
+
+The authentication system has now evolved into:
+
+```text
+Authentication
+      +
+Authorization
+      ↓
+Protected Backend
+```
+
+---
+
+# 🔥 Development Milestone
+
+You are now building an actual authentication-management backend with:
+
+```text
+Registration
+     ↓
+Password Hashing
+     ↓
+Login
+     ↓
+bcrypt.compare()
+     ↓
+JWT Generation
+     ↓
+JWT Authentication
+     ↓
+Protected Routes
+     ↓
+User Roles
+     ↓
+RBAC
+     ↓
+ADMIN-only Operations
+```
+
+This is a significant backend engineering milestone.
+
+---
+
+# 🧪 Debugging & Learning Process
+
+Several mistakes happened during today's implementation.
+
+However, most of them were:
+
+```text
+TypeScript mistakes
+        +
+API / route design mistakes
+```
+
+rather than misunderstandings of the overall architecture.
+
+The important learning cycle was:
+
+```text
+Understand
+   ↓
+Implement Yourself
+   ↓
+Get an Error
+   ↓
+Debug
+   ↓
+Understand Why
+   ↓
+Fix It
+   ↓
+Continue
+```
+
+This is an important part of learning backend engineering.
+
+---
+
+# 🎯 Current Project Status
+
+```text
+┌─────────────────────────────────────────────┐
+│       BACKEND AUTHENTICATION SERVICE        │
+├─────────────────────────────────────────────┤
+│                                             │
+│ Registration                          ✅    │
+│ Password Hashing                      ✅    │
+│ Global Error Handling                 ✅    │
+│ Login Validation                      ✅    │
+│ bcrypt.compare()                      ✅    │
+│ JWT Secret Configuration              ✅    │
+│ JWT Expiration                        ✅    │
+│ JWT Generation                        ✅    │
+│ JWT Verification                      ✅    │
+│ Bearer Token Extraction               ✅    │
+│ Authentication Middleware             ✅    │
+│ req.user                              ✅    │
+│ Protected Routes                      ✅    │
+│ User Roles                            ✅    │
+│ USER / ADMIN Roles                    ✅    │
+│ Role in JWT                           ✅    │
+│ Authorization Middleware              ✅    │
+│ ADMIN-only Route                      ✅    │
+│                                             │
+│ DELETE User API                       🔄    │
+│ Route Parameter Fix                   🚧    │
+│ DELETE /users/:id                     ⏳    │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+# 🚀 Next Session
+
+## Complete DELETE `/users/:id`
+
+Continue exactly from the route parameter issue.
+
+### Current
+
+```text
+/delete/users
+```
+
+### Required
+
+```text
+/delete/users/:id
+```
+
+### Request
+
+```http
+DELETE /delete/users/2
+```
+
+### Controller
+
+Use:
+
+```text
+req.params.id
+```
+
+### Final Flow
+
+```text
+DELETE /delete/users/2
+        ↓
+authMiddleware
+        ↓
+authorize("ADMIN")
+        ↓
+deleteUser Controller
+        ↓
+req.params.id
+        ↓
+Delete User Service
+        ↓
+User Deletion Repository
+        ↓
+PostgreSQL
+        ↓
+Success Response
+```
+
+---
+
+# 🫡 End-of-Session Summary
+
+> [!success]  
+> **12 August 2026 — RBAC / Authorization Completed**
+> 
+> Today we moved from:
+> 
+> **Authentication → Authorization**
+> 
+> We completed:
+> 
+> - User roles
+>     
+> - `USER` / `ADMIN`
+>     
+> - Role in JWT
+>     
+> - Authorization middleware
+>     
+> - ADMIN-only routes
+>     
+> - `401` vs `403`
+>     
+> - Protected admin operations
+>     
+> 
+> The only remaining issue is completing the **DELETE `/users/:id` endpoint** by fixing the route parameter.
+
+> [!tip]  
+> **Next session:** Fix `/delete/users/:id` → complete Delete User API → test ADMIN authorization end-to-end.

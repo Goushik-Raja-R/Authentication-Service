@@ -37,12 +37,18 @@ export const profile = async(req:Request,res:Response)=>{
 }
 
 export const deleteUser = async(req:Request,res:Response)=>{
+
+            if(typeof(req.params.id) !== "string"){
+                 return res.status(400).json({
+                    message:"Invalid user id",
+                  })
+            }
             
             const userID = parseInt(req.params.id,10);
 
-            if(!isNaN(userID)){
+            if(isNaN(userID)){
                 return res.status(400).json({
-                message:"Error 404",
+                message:"Invalid user id",
             })
             }
 
