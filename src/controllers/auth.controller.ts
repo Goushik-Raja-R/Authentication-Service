@@ -1,6 +1,5 @@
 import type {Request,Response} from 'express';
-
-import { ServiceResgister,ServiceLogin } from '../services/auth.service.js';
+import { ServiceResgister,ServiceLogin,ServiceProfile,ServiceDelete} from '../services/auth.service.js';
 
 export const register = async (req:Request,res:Response) =>{
             const user = req.body;
@@ -23,12 +22,36 @@ export const login = async(req:Request,res:Response) =>{
 }
 
 export const profile = async(req:Request,res:Response)=>{
-            const user = req.body;
+
+            if(req.user === undefined){
+                return res.status(401).json({
+                    message:"Unauthorized user"
+                })
+            }
+            const user = await ServiceProfile(req.user);
 
             return res.status(200).json({
-                message:"User Profile",
-                data:req.user
+                message:"User Data",
+                data:user
             })
+}
+
+export const deleteUser = async(req:Request,res:Response)=>{
+            
+            const userID = parseInt(req.params.id,10);
+
+            if(!isNaN(userID)){
+                return res.status(400).json({
+                message:"Error 404",
+            })
+            }
+
+            await ServiceDelete(userID);
+
+            return res.status(200).json({
+                message:"User Deleted Successfully"
+            })
+
 }
 
 // if the user return the value line 11 will get executed 

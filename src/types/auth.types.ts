@@ -1,3 +1,4 @@
 export interface AuthUser{
-    userId:number
+    userId:number,
+    role:"USER"|"ADMIN"
 }
