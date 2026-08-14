@@ -7029,3 +7029,951 @@ Success Response
 
 > [!tip]  
 > **Next session:** Fix `/delete/users/:id` → complete Delete User API → test ADMIN authorization end-to-end.
+
+---
+
+# Backend Authentication Service — 14 August 2026
+
+> [!summary]  
+> **Session Focus:** Access Tokens + Refresh Tokens
+
+---
+
+# 🫡 End of Today's Session
+
+## 📅 14 August 2026 — Refresh Tokens
+
+Today we started the next major part of authentication:
+
+> **Access Tokens + Refresh Tokens**
+
+This builds on the JWT authentication system we completed in the previous sessions.
+
+---
+
+# ✅ What We Already Had
+
+Before introducing refresh tokens, the authentication flow was:
+
+```text
+Login
+  ↓
+Access Token
+  ↓
+15-minute expiry
+  ↓
+Protected APIs
+```
+
+The access token is used to authenticate requests to protected APIs.
+
+---
+
+# ⚠️ The Access Token Expiration Problem
+
+Access tokens should have a relatively short lifetime.
+
+For example:
+
+```text
+Access Token
+      ↓
+15-minute expiry
+      ↓
+Token expires
+```
+
+The problem is:
+
+```text
+Access Token expires
+        ↓
+User shouldn't have to login again
+        ↓
+Need a way to obtain a new Access Token
+```
+
+This is where the **Refresh Token** comes in.
+
+---
+
+# 🔄 Access Token + Refresh Token Flow
+
+The basic idea is:
+
+```text
+Login
+  ↓
+Access Token + Refresh Token
+  ↓
+Use Access Token
+  ↓
+Access Token expires
+  ↓
+Client sends Refresh Token
+  ↓
+Server verifies Refresh Token
+  ↓
+Generate New Access Token
+  ↓
+Client continues using API
+```
+
+The user does not need to enter their username/password again every time the access token expires.
+
+---
+
+# 🧠 Important Correction
+
+Initially, we thought:
+
+```text
+Access Token expires
+        ↓
+Database trigger automatically creates Refresh Token
+```
+
+This is **not how JWT expiration works**.
+
+We corrected the architecture to:
+
+```text
+Access Token expires
+        ↓
+Client calls POST /auth/refresh
+        ↓
+Client sends Refresh Token
+        ↓
+Server verifies Refresh Token
+        ↓
+Generate New Access Token
+        ↓
+Return New Access Token
+```
+
+---
+
+# 🚫 No Database Trigger Is Required
+
+JWT expiration does **not** require a PostgreSQL/database trigger.
+
+The expiration is part of the JWT itself.
+
+Conceptually:
+
+```text
+JWT
+ ↓
+exp claim
+ ↓
+Expiration time
+ ↓
+jwt.verify()
+ ↓
+Expired?
+ ├── YES → verification fails
+ └── NO  → token is valid
+```
+
+When the access token expires, nothing needs to automatically happen inside PostgreSQL.
+
+Instead, the client initiates the refresh process by calling:
+
+```http
+POST /auth/refresh
+```
+
+with the refresh token.
+
+---
+
+# 🔐 Token Responsibilities
+
+We established that the two tokens have different responsibilities.
+
+---
+
+## Access Token
+
+### Purpose
+
+```text
+Access Token
+      ↓
+Access Protected APIs
+```
+
+### Characteristics
+
+```text
+Purpose  → Access protected APIs
+Lifetime → Short
+Example  → 15 minutes
+```
+
+The access token is sent with protected API requests:
+
+```http
+Authorization: Bearer <ACCESS_TOKEN>
+```
+
+Example flow:
+
+```text
+Client
+  ↓
+Authorization: Bearer <Access Token>
+  ↓
+Authentication Middleware
+  ↓
+jwt.verify()
+  ↓
+Protected API
+```
+
+---
+
+# 🔄 Refresh Token
+
+### Purpose
+
+```text
+Refresh Token
+      ↓
+Obtain a New Access Token
+```
+
+### Characteristics
+
+```text
+Purpose  → Obtain a new Access Token
+Lifetime → Longer
+Example  → Several days
+```
+
+The refresh token is **not primarily used to access normal protected APIs**.
+
+Instead, it is used specifically to request a new access token.
+
+---
+
+# 🆚 Access Token vs Refresh Token
+
+|Feature|Access Token|Refresh Token|
+|---|---|---|
+|Main Purpose|Access protected APIs|Obtain a new access token|
+|Lifetime|Short|Long|
+|Example|15 minutes|Several days|
+|Used with protected APIs|✅ Yes|❌ No|
+|Used with `/auth/refresh`|❌ No|✅ Yes|
+|Sent as Bearer token to every API|✅|❌|
+|Contains user identity|Yes|Minimal identity information|
+|Used for continuous sessions|Indirectly|Yes|
+
+---
+
+# 🧩 Refresh Token Payload
+
+We established that the refresh token should contain **minimal information**.
+
+Primarily:
+
+```text
+Refresh Token
+      ↓
+User Identity
+```
+
+For example:
+
+```json
+{
+  "userId": 5
+}
+```
+
+The idea is to avoid putting unnecessary information into the refresh token.
+
+---
+
+# ⚠️ Why Keep the Refresh Token Payload Minimal?
+
+A refresh token's main responsibility is:
+
+> Identify which user is requesting a new access token.
+
+Therefore, we don't need to put lots of information inside it.
+
+Conceptually:
+
+```text
+Refresh Token Payload
+│
+└── userId
+```
+
+rather than:
+
+```text
+Refresh Token Payload
+│
+├── userId
+├── role
+├── password
+├── profile data
+├── unnecessary claims
+└── sensitive information
+```
+
+The refresh token should contain only what is necessary for the refresh process.
+
+---
+
+# 🔑 Separate Token Responsibilities
+
+The overall architecture is:
+
+```text
+                    Authentication
+                          │
+              ┌───────────┴───────────┐
+              │                       │
+              ▼                       ▼
+        Access Token             Refresh Token
+              │                       │
+              ▼                       ▼
+      Protected APIs          /auth/refresh
+              │                       │
+              ▼                       ▼
+       Short lifetime          Longer lifetime
+```
+
+---
+
+# 🔄 Complete Refresh Flow
+
+The intended refresh flow is:
+
+```text
+                         CLIENT
+                            │
+                            │ Access Token
+                            ▼
+                     Protected API
+                            │
+                            ▼
+                     Access Token
+                        expires
+                            │
+                            ▼
+                  POST /auth/refresh
+                            │
+                            │ Refresh Token
+                            ▼
+                     Refresh Endpoint
+                            │
+                            ▼
+                Verify Refresh Token
+                            │
+                       ┌────┴────┐
+                       │         │
+                     Valid     Invalid
+                       │         │
+                       ▼         ▼
+                Generate New    401
+                Access Token
+                       │
+                       ▼
+                     Client
+                       │
+                       ▼
+                Continue API usage
+```
+
+---
+
+# 🏗️ Current Authentication Architecture
+
+The project has now evolved from simple login authentication into a token-based session architecture.
+
+```text
+Client
+  │
+  ▼
+Login
+  │
+  ▼
+Authentication
+  │
+  ├───────────────┐
+  ▼               ▼
+Access Token   Refresh Token
+  │               │
+  │               │
+  ▼               ▼
+Protected       /auth/refresh
+APIs                │
+  │                 ▼
+  │           Verify Refresh Token
+  │                 │
+  │                 ▼
+  │          New Access Token
+  │                 │
+  └────────◄────────┘
+```
+
+---
+
+# 🧠 Important Mental Model
+
+Think of the tokens this way:
+
+```text
+Access Token
+    ↓
+"Let me access this protected resource."
+```
+
+while:
+
+```text
+Refresh Token
+    ↓
+"Let me prove that I can obtain a new access token."
+```
+
+They serve different purposes.
+
+---
+
+# ⏳ Token Lifetimes
+
+A typical architecture might look like:
+
+```text
+Access Token
+     ↓
+15 minutes
+```
+
+while:
+
+```text
+Refresh Token
+     ↓
+Several days
+```
+
+The exact durations are configuration decisions and can be changed later.
+
+The important principle is:
+
+> **Access token = short-lived**
+> 
+> **Refresh token = longer-lived**
+
+---
+
+# 🔐 Security Concept
+
+The access token is intentionally short-lived.
+
+If an access token is compromised:
+
+```text
+Attacker obtains Access Token
+          ↓
+Token has limited lifetime
+          ↓
+Eventually expires
+```
+
+The refresh token allows the legitimate client to obtain another access token without requiring the user to log in again.
+
+Therefore, refresh tokens require stronger protection because they have a longer lifetime.
+
+---
+
+# 📍 Where We Will Continue
+
+The refresh-token implementation will be built step by step.
+
+## Next Tasks
+
+```text
+1. Decide refresh-token payload
+        ↓
+2. Add refresh-token secret/config
+        ↓
+3. Generate refresh token during login
+        ↓
+4. Return access + refresh tokens
+        ↓
+5. Create POST /auth/refresh
+        ↓
+6. Verify refresh token
+        ↓
+7. Generate new access token
+        ↓
+8. Test the complete flow
+        ↓
+9. Later → rotation + logout/revocation
+```
+
+---
+
+# 1️⃣ Decide Refresh-Token Payload
+
+We need to finalize what information the refresh token contains.
+
+Current direction:
+
+```json
+{
+  "userId": 5
+}
+```
+
+The goal is to keep the refresh token payload minimal.
+
+---
+
+# 2️⃣ Add Refresh-Token Secret/Config
+
+The refresh token should have its own signing configuration.
+
+Conceptually:
+
+```text
+Access Token
+      ↓
+ACCESS_TOKEN_SECRET
+
+Refresh Token
+      ↓
+REFRESH_TOKEN_SECRET
+```
+
+This separates the secrets used for the two token types.
+
+The secrets should remain server-side and should be configured securely through environment variables.
+
+---
+
+# 3️⃣ Generate Refresh Token During Login
+
+Currently:
+
+```text
+Login
+  ↓
+Verify Password
+  ↓
+Generate Access Token
+```
+
+We will change this to:
+
+```text
+Login
+  ↓
+Verify Password
+  ↓
+Generate Access Token
+  ↓
+Generate Refresh Token
+```
+
+---
+
+# 4️⃣ Return Both Tokens
+
+The login response will eventually contain both tokens.
+
+Conceptually:
+
+```json
+{
+  "message": "User Successfully logged in",
+  "data": {
+    "accessToken": "<ACCESS_TOKEN>",
+    "refreshToken": "<REFRESH_TOKEN>"
+  }
+}
+```
+
+The exact response structure can depend on the implementation.
+
+---
+
+# 5️⃣ Create `/auth/refresh`
+
+We will create:
+
+```http
+POST /auth/refresh
+```
+
+Its responsibility will be to receive the refresh token and use it to generate a new access token.
+
+Conceptually:
+
+```text
+POST /auth/refresh
+        ↓
+Receive Refresh Token
+        ↓
+Verify Refresh Token
+        ↓
+Extract userId
+        ↓
+Generate New Access Token
+        ↓
+Return New Access Token
+```
+
+---
+
+# 6️⃣ Verify Refresh Token
+
+The server will verify the refresh token before issuing a new access token.
+
+Conceptually:
+
+```text
+Refresh Token
+      +
+Refresh Token Secret
+      ↓
+Verify
+      ↓
+ ┌────┴────┐
+ ▼         ▼
+Valid     Invalid
+ │         │
+ ▼         ▼
+Continue   401
+```
+
+---
+
+# 7️⃣ Generate New Access Token
+
+After successful refresh-token verification:
+
+```text
+Verified Refresh Token
+        ↓
+Extract userId
+        ↓
+Generate New Access Token
+        ↓
+Return Access Token
+```
+
+The user does not need to provide their password again.
+
+---
+
+# 8️⃣ Test Complete Flow
+
+We will test:
+
+### Initial Login
+
+```text
+Login
+ ↓
+Access Token
+ +
+Refresh Token
+```
+
+### Access Protected API
+
+```text
+Access Token
+ ↓
+Authorization: Bearer <Access Token>
+ ↓
+Protected API
+ ↓
+Success
+```
+
+### Access Token Expiration
+
+```text
+Access Token
+ ↓
+Expires
+```
+
+### Refresh
+
+```text
+POST /auth/refresh
+ ↓
+Refresh Token
+ ↓
+Verify
+ ↓
+New Access Token
+```
+
+### Continue Using API
+
+```text
+New Access Token
+ ↓
+Authorization: Bearer <New Access Token>
+ ↓
+Protected API
+ ↓
+Success
+```
+
+---
+
+# 9️⃣ Future — Token Rotation + Logout / Revocation
+
+After the basic refresh-token flow is working, we will eventually cover:
+
+```text
+Refresh Token Rotation
+        ↓
+Logout
+        ↓
+Token Revocation
+```
+
+These are more advanced session-security concepts.
+
+They are **not part of today's implementation yet**.
+
+---
+
+# 📊 Current Project Progress
+
+```text
+┌─────────────────────────────────────────────┐
+│       BACKEND AUTHENTICATION SERVICE        │
+├─────────────────────────────────────────────┤
+│                                             │
+│ Registration                          ✅    │
+│ Password Hashing                      ✅    │
+│ Login                                 ✅    │
+│ JWT Access Token                      ✅    │
+│ JWT Expiration                        ✅    │
+│ Authentication Middleware             ✅    │
+│ Protected APIs                        ✅    │
+│ RBAC                                  ✅    │
+│ Admin-only DELETE                     ✅    │
+│                                             │
+│ Refresh Token                         🟡    │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+# 🏆 Authentication Milestone
+
+The project has progressed through several major stages:
+
+```text
+Registration
+      ↓
+Password Hashing
+      ↓
+Login
+      ↓
+JWT Access Token
+      ↓
+JWT Authentication
+      ↓
+Protected APIs
+      ↓
+RBAC / Authorization
+      ↓
+Admin Operations
+      ↓
+Refresh Tokens
+```
+
+---
+
+# 🔥 Current Authentication Architecture
+
+```text
+                              CLIENT
+                                 │
+                                 ▼
+                               LOGIN
+                                 │
+                                 ▼
+                          Verify Password
+                                 │
+                                 ▼
+                    ┌────────────┴────────────┐
+                    │                         │
+                    ▼                         ▼
+              Access Token             Refresh Token
+                    │                         │
+             Short Lifetime             Long Lifetime
+                    │                         │
+                    ▼                         ▼
+             Protected APIs             /auth/refresh
+                                              │
+                                              ▼
+                                      Verify Refresh Token
+                                              │
+                                              ▼
+                                      Generate New Access
+                                            Token
+                                              │
+                                              ▼
+                                            CLIENT
+                                              │
+                                              ▼
+                                       Protected APIs
+```
+
+---
+
+# 🧠 Key Takeaways
+
+|Concept|Purpose|
+|---|---|
+|Access Token|Used to access protected APIs|
+|Refresh Token|Used to obtain a new access token|
+|Access Token Lifetime|Short|
+|Refresh Token Lifetime|Longer|
+|Access Token Example|15 minutes|
+|Refresh Token Example|Several days|
+|JWT Expiration|Does not require a database trigger|
+|`/auth/refresh`|Endpoint for refreshing access tokens|
+|Refresh Token Payload|Should contain minimal information|
+|Refresh Token Secret|Server-side secret used to verify refresh tokens|
+|Token Rotation|Future security enhancement|
+|Revocation|Future mechanism for invalidating refresh tokens|
+|Logout|Future session-management feature|
+
+---
+
+# ⚠️ Important Correction to Remember
+
+> [!important]  
+> **JWT expiration does not automatically trigger a database operation.**
+> 
+> When an access token expires, the client must initiate the refresh flow by sending the refresh token to the refresh endpoint.
+
+Correct:
+
+```text
+Access Token expires
+        ↓
+Client
+        ↓
+POST /auth/refresh
+        ↓
+Refresh Token
+        ↓
+Server verifies
+        ↓
+New Access Token
+```
+
+Not:
+
+```text
+Access Token expires
+        ↓
+PostgreSQL Trigger
+        ↓
+Automatically create Refresh Token
+```
+
+---
+
+# 📝 Session Summary
+
+> [!success]  
+> **14 August 2026 — Refresh Tokens Started**
+> 
+> Today we learned:
+> 
+> - Why access tokens should be short-lived
+>     
+> - The problem caused by access-token expiration
+>     
+> - Why users shouldn't need to log in again every time an access token expires
+>     
+> - The purpose of refresh tokens
+>     
+> - Access Token vs Refresh Token responsibilities
+>     
+> - Why JWT expiration does not require a database trigger
+>     
+> - Why the refresh token should contain minimal information
+>     
+> - The purpose of `/auth/refresh`
+>     
+> - The overall refresh-token architecture
+>     
+> - The future concepts of token rotation, logout, and revocation
+>     
+
+---
+
+# 🚀 Next Session
+
+## Build the Refresh-Token Flow
+
+Continue from:
+
+```text
+1. Decide refresh-token payload
+        ↓
+2. Add refresh-token secret/config
+        ↓
+3. Generate refresh token during login
+        ↓
+4. Return access + refresh tokens
+        ↓
+5. Create POST /auth/refresh
+        ↓
+6. Verify refresh token
+        ↓
+7. Generate new access token
+        ↓
+8. Test complete flow
+```
+
+> [!tip]  
+> **Next major milestone: Build the complete Access Token + Refresh Token flow step by step, with the implementation written by you. 🔥**
+
+---
+
+# 🫡 End-of-Session Milestone
+
+> [!success]  
+> **Authentication has now evolved from simple JWT login into a session-renewal architecture.**
+> 
+> ```text
+> Login
+>   ↓
+> Access Token + Refresh Token
+>   ↓
+> Access Token → Protected APIs
+>   ↓
+> Access Token expires
+>   ↓
+> Refresh Token → /auth/refresh
+>   ↓
+> New Access Token
+>   ↓
+> Continue using protected APIs
+> ```
+> 
+> **Next session: implement it. 🫡🔥**
