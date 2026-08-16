@@ -8,9 +8,10 @@ const DB_NAME = process.env.DB_NAME;
 const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD;
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
 
-if(!PORT || !DB_HOST || !DB_PORT  || !DB_NAME  || !DB_USER  || !DB_PASSWORD || !JWT_SECRET){
+if(!PORT || !DB_HOST || !DB_PORT  || !DB_NAME  || !DB_USER  || !DB_PASSWORD || !JWT_SECRET || !JWT_REFRESH_SECRET){
      console.error("One or more required environment variables are missing.");
      process.exit(1);
 }
@@ -19,6 +20,7 @@ if(!PORT || !DB_HOST || !DB_PORT  || !DB_NAME  || !DB_USER  || !DB_PASSWORD || !
 const PORT_NUMBER = parseInt(PORT,10);
 const DB_PORT_NUMBER = parseInt(DB_PORT,10);
 const JWT_SECRET_KEY:string = JWT_SECRET;
+const JWT_REFRESH_KEY:string = JWT_REFRESH_SECRET
 
 
 if(isNaN(PORT_NUMBER) || isNaN(DB_PORT_NUMBER)){
@@ -26,4 +28,4 @@ if(isNaN(PORT_NUMBER) || isNaN(DB_PORT_NUMBER)){
     process.exit(1);
 }
 
-export {PORT,DB_HOST,DB_PORT_NUMBER,DB_NAME,DB_USER,DB_PASSWORD,JWT_SECRET_KEY};
+export {PORT,DB_HOST,DB_PORT_NUMBER,DB_NAME,DB_USER,DB_PASSWORD,JWT_SECRET_KEY,JWT_REFRESH_KEY};

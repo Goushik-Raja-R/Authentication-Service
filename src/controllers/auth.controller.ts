@@ -1,5 +1,5 @@
 import type {Request,Response} from 'express';
-import { ServiceResgister,ServiceLogin,ServiceProfile,ServiceDelete} from '../services/auth.service.js';
+import { ServiceResgister,ServiceLogin,ServiceProfile,ServiceDelete,ServiceRefresh} from '../services/auth.service.js';
 
 export const register = async (req:Request,res:Response) =>{
             const user = req.body;
@@ -57,6 +57,15 @@ export const deleteUser = async(req:Request,res:Response)=>{
             return res.status(200).json({
                 message:"User Deleted Successfullyy"
             })
+
+}
+
+export const refresh = async(req:Request,res:Response)=>{
+        const {refreshtoken} = req.body;
+
+        const user = await ServiceRefresh(refreshtoken);
+
+        
 
 }
 

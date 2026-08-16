@@ -3,7 +3,7 @@ import type { LoginUser,RegisterUser } from '../types/user.types.js';
 import AppError from '../errors/AppError.js';
 import jwt from 'jsonwebtoken';
 import type { SignOptions } from 'jsonwebtoken';
-import { JWT_SECRET_KEY } from '../config/env.js';
+import { JWT_SECRET_KEY,JWT_REFRESH_KEY } from '../config/env.js';
 import type { AuthUser } from '../types/auth.types.js';
 
 import { existingUser,createUser,getUserProfile,userDeletion } from '../repositories/auth.repository.js';
@@ -47,16 +47,23 @@ export const ServiceLogin = async(user:LoginUser)=>{
         const passCheck = await bcrypt.compare(user.password,checkUser.password) 
 
         const options:SignOptions = {expiresIn:'15m'}
+        const refOption:SignOptions = {expiresIn:'7d'}
 
         if(passCheck){
-            const token = jwt.sign(
+            const accesstoken = jwt.sign(
                 {userId:checkUser.id,
                 role:checkUser.role},
                 JWT_SECRET_KEY,
                 options
             );
 
-            return token;
+            const refreshtoken = jwt.sign(
+                {userId:checkUser.id},
+                JWT_REFRESH_KEY,
+                refOption
+            )
+
+            return {accesstoken,refreshtoken};
 
         }else{
             throw new AppError("Unauthorized User",401);
@@ -87,5 +94,15 @@ export const ServiceDelete = async(userID:number)=>{
         }
 
         return user;
+
+}
+
+export const ServiceRefresh = async(token:string)=>{
+
+        const checkToken = jwt.verify(token,JWT_REFRESH_KEY);
+
+        if(checkToken){
+            
+        }
 
 }
