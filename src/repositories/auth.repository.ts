@@ -24,7 +24,7 @@ export const createUser = async(newuser:RegisterUser)=>{
 export const getUserProfile = async(userID:number)=>{
 
     const result = await pool.query(
-        `SELECT ID,NAME,EMAIL FROM USERS WHERE ID =$1`,
+        `SELECT ID,NAME,EMAIL,ROLE FROM USERS WHERE ID =$1`,
         [userID]
     )
 

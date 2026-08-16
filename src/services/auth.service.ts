@@ -4,7 +4,7 @@ import AppError from '../errors/AppError.js';
 import jwt from 'jsonwebtoken';
 import type { SignOptions } from 'jsonwebtoken';
 import { JWT_SECRET_KEY,JWT_REFRESH_KEY } from '../config/env.js';
-import type { AuthUser } from '../types/auth.types.js';
+import type { AuthUser,RefreshTokenPayload } from '../types/auth.types.js';
 
 import { existingUser,createUser,getUserProfile,userDeletion } from '../repositories/auth.repository.js';
 
@@ -99,10 +99,32 @@ export const ServiceDelete = async(userID:number)=>{
 
 export const ServiceRefresh = async(token:string)=>{
 
-        const checkToken = jwt.verify(token,JWT_REFRESH_KEY);
+ 
+        try{
+            const checkToken = jwt.verify(token,JWT_REFRESH_KEY) as RefreshTokenPayload
 
-        if(checkToken){
-            
+        if(!checkToken.userId){
+            throw new AppError("Unauthorized",401);
         }
 
+        const user = await getUserProfile(checkToken.userId)
+
+        if(!user){
+            throw new AppError("Unauthorized",401);
+        }
+
+        const newAccessOption:SignOptions = {expiresIn:'15m'}
+
+        const newAccessToken = jwt.sign({
+                userId:checkToken.userId,
+                role:user.role},
+                JWT_SECRET_KEY,
+                newAccessOption
+        )
+            
+        return newAccessToken
+    }
+    catch(error){
+        throw new AppError("Internal Server Error",500)
+    }
 }

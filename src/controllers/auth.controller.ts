@@ -1,5 +1,6 @@
 import type {Request,Response} from 'express';
 import { ServiceResgister,ServiceLogin,ServiceProfile,ServiceDelete,ServiceRefresh} from '../services/auth.service.js';
+import { access } from 'fs';
 
 export const register = async (req:Request,res:Response) =>{
             const user = req.body;
@@ -63,10 +64,12 @@ export const deleteUser = async(req:Request,res:Response)=>{
 export const refresh = async(req:Request,res:Response)=>{
         const {refreshtoken} = req.body;
 
-        const user = await ServiceRefresh(refreshtoken);
+        const token = await ServiceRefresh(refreshtoken);
 
-        
-
+        return res.status(200).json({
+            message:"Accesstoken created successfully",
+            accesstoken:token
+        })
 }
 
 // if the user return the value line 11 will get executed 
