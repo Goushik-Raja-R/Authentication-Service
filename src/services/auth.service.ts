@@ -6,7 +6,7 @@ import type { SignOptions } from 'jsonwebtoken';
 import { JWT_SECRET_KEY,JWT_REFRESH_KEY } from '../config/env.js';
 import type { AuthUser,RefreshTokenPayload } from '../types/auth.types.js';
 
-import { existingUser,createUser,getUserProfile,userDeletion } from '../repositories/auth.repository.js';
+import { existingUser,createUser,getUserProfile,userDeletion,refreshUser } from '../repositories/auth.repository.js';
 
 
 export const ServiceResgister = async(user:RegisterUser)=>{
@@ -62,6 +62,16 @@ export const ServiceLogin = async(user:LoginUser)=>{
                 JWT_REFRESH_KEY,
                 refOption
             )
+
+            const expireTime = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+            const user =({
+                user_id:checkUser.id,
+                token:refreshtoken,
+                expires_at:expireTime
+            })
+
+            await refreshUser(user);
 
             return {accesstoken,refreshtoken};
 
@@ -121,10 +131,14 @@ export const ServiceRefresh = async(token:string)=>{
                 JWT_SECRET_KEY,
                 newAccessOption
         )
-            
+
         return newAccessToken
     }
     catch(error){
-        throw new AppError("Internal Server Error",500)
+        
+        if(error instanceof AppError){
+            throw error
+        }
+        throw new AppError("Unauthorized",401);
     }
 }

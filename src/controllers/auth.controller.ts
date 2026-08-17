@@ -1,6 +1,6 @@
 import type {Request,Response} from 'express';
 import { ServiceResgister,ServiceLogin,ServiceProfile,ServiceDelete,ServiceRefresh} from '../services/auth.service.js';
-import { access } from 'fs';
+
 
 export const register = async (req:Request,res:Response) =>{
             const user = req.body;

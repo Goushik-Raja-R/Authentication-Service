@@ -11,3 +11,9 @@ export interface RegisterUser{
     password:string,
     role:"USER"|"ADMIN"
 }
+
+export interface RefreshTokenUser{
+    user_id:number,
+    token:string,
+    expires_at:Date
+}

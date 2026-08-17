@@ -1,5 +1,5 @@
 import pool from "../config/database.js";
-import type { RegisterUser } from "../types/user.types.js";
+import type { RegisterUser,RefreshTokenUser } from "../types/user.types.js";
 
 export const existingUser = async(email:string)=>{
 
@@ -12,12 +12,10 @@ export const existingUser = async(email:string)=>{
 
 export const createUser = async(newuser:RegisterUser)=>{
 
-
     const result = await pool.query(
         `INSERT INTO USERS(name,email,password,role) VALUES($1,$2,$3,$4) RETURNING id,name,email,role`,
         [newuser.name,newuser.email,newuser.password,newuser.role]
     )
-
         return result.rows[0];
 }
 
@@ -39,4 +37,12 @@ export const userDeletion = async(userID:number)=>{
     )
 
     return result.rowCount;
+}
+
+export const refreshUser = async(user:RefreshTokenUser)=>{
+    
+        await pool.query(
+        `INSERT INTO refresh_tokens(user_id,token,expires_at) VALUES($1,$2,$3)`,
+        [user.user_id,user.token,user.expires_at]
+    )
 }

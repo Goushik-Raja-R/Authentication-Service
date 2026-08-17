@@ -10,6 +10,6 @@ authrouter.post('/register',register);
 authrouter.post('/login',login);
 authrouter.post('/profile',authMiddleware,profile);
 authrouter.delete('/delete/users/:id',authMiddleware,authorize("ADMIN"),deleteUser);
-authrouter.post('/refresh',)
+authrouter.post('/refresh',refresh);
 
 export default authrouter;
