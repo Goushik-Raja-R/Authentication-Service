@@ -6,7 +6,7 @@ import type { SignOptions } from 'jsonwebtoken';
 import { JWT_SECRET_KEY,JWT_REFRESH_KEY } from '../config/env.js';
 import type { AuthUser,RefreshTokenPayload } from '../types/auth.types.js';
 
-import { existingUser,createUser,getUserProfile,userDeletion,refreshUser } from '../repositories/auth.repository.js';
+import { existingUser,createUser,getUserProfile,userDeletion,refreshUser,userDataFromRefresh,revocationToken } from '../repositories/auth.repository.js';
 
 
 export const ServiceResgister = async(user:RegisterUser)=>{
@@ -47,7 +47,7 @@ export const ServiceLogin = async(user:LoginUser)=>{
         const passCheck = await bcrypt.compare(user.password,checkUser.password) 
 
         const options:SignOptions = {expiresIn:'15m'}
-        const refOption:SignOptions = {expiresIn:'7d'}
+        const refOption:SignOptions = {expiresIn:'1m'}
 
         if(passCheck){
             const accesstoken = jwt.sign(
@@ -117,12 +117,17 @@ export const ServiceRefresh = async(token:string)=>{
             throw new AppError("Unauthorized",401);
         }
 
-        const user = await getUserProfile(checkToken.userId)
+        const user = await userDataFromRefresh(token)
 
-        if(!user){
+        const currentTime:Date = new Date();
+
+        if(!user || user.revoked === true || user.expires_at < currentTime){
             throw new AppError("Unauthorized",401);
         }
 
+        await revocationToken(token);
+
+        const newRefreshOption:SignOptions = {expiresIn:'7d'}
         const newAccessOption:SignOptions = {expiresIn:'15m'}
 
         const newAccessToken = jwt.sign({
@@ -132,7 +137,13 @@ export const ServiceRefresh = async(token:string)=>{
                 newAccessOption
         )
 
-        return newAccessToken
+        const newRefreshToken = jwt.sign({
+            userId:checkToken.userId},
+            JWT_REFRESH_KEY,
+            newRefreshOption
+        )
+
+        return {newAccessToken,newRefreshToken}
     }
     catch(error){
         

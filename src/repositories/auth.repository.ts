@@ -46,3 +46,25 @@ export const refreshUser = async(user:RefreshTokenUser)=>{
         [user.user_id,user.token,user.expires_at]
     )
 }
+
+export const userDataFromRefresh = async(token:string)=>{
+
+        const result = await pool.query(
+            `SELECT *FROM refresh_tokens WHERE token = $1`,
+            [token]
+        )
+
+        return result.rows[0];
+}
+
+export const revocationToken = async(token:string)=>{
+
+        const result = await pool.query(
+            `UPDATE refresh_tokens
+             SET revoke = TRUE
+             WHERE token = $1 `,
+             [token]
+        )
+
+        return result.rows[0];
+}

@@ -72,6 +72,7 @@ export const refresh = async(req:Request,res:Response)=>{
         })
 }
 
+
 // if the user return the value line 11 will get executed 
 
 // or if the user throws user already exist it will go to catch block which is in line 18 and check if the serice sended error is instance of app error or not if yes it will execute Apperror return status and message
