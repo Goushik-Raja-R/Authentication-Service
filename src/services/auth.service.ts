@@ -6,7 +6,9 @@ import type { SignOptions } from 'jsonwebtoken';
 import { JWT_SECRET_KEY,JWT_REFRESH_KEY } from '../config/env.js';
 import type { AuthUser,RefreshTokenPayload } from '../types/auth.types.js';
 
-import { existingUser,createUser,getUserProfile,userDeletion,refreshUser,userDataFromRefresh,revocationToken } from '../repositories/auth.repository.js';
+import { existingUser,createUser,getUserProfile,
+    userDeletion,refreshUser,userDataFromRefresh,revocationToken,revocationTokenAll } from '../repositories/auth.repository.js';
+import { error } from 'node:console';
 
 
 export const ServiceResgister = async(user:RegisterUser)=>{
@@ -47,7 +49,7 @@ export const ServiceLogin = async(user:LoginUser)=>{
         const passCheck = await bcrypt.compare(user.password,checkUser.password) 
 
         const options:SignOptions = {expiresIn:'15m'}
-        const refOption:SignOptions = {expiresIn:'1m'}
+        const refOption:SignOptions = {expiresIn:'7d'}
 
         if(passCheck){
             const accesstoken = jwt.sign(
@@ -121,6 +123,7 @@ export const ServiceRefresh = async(token:string)=>{
 
         const currentTime:Date = new Date();
 
+
         if(!user || user.revoked === true || user.expires_at < currentTime){
             throw new AppError("Unauthorized",401);
         }
@@ -143,10 +146,72 @@ export const ServiceRefresh = async(token:string)=>{
             newRefreshOption
         )
 
+        const expireTime:Date = new Date(Date.now()+ 7 * 24 * 60 * 60 * 100)
+
+        const newRefToken =({
+            user_id:checkToken.userId,
+            token:newRefreshToken,
+            expires_at:expireTime
+        })
+
+        await refreshUser(newRefToken);
+
         return {newAccessToken,newRefreshToken}
     }
     catch(error){
         
+        if(error instanceof AppError){
+            throw error
+        }
+        throw new AppError("Unauthorized",401);
+    }
+}
+
+export const ServiceLogout = async(token:string)=>{
+        
+        try{
+            const checkToken = jwt.verify(token,JWT_REFRESH_KEY) as RefreshTokenPayload
+
+            if(!checkToken.userId){
+                throw new AppError("Unauthorized User",401);
+            }
+
+            const user = await userDataFromRefresh(token);
+
+            if(!user || user.revoked === true){
+                throw new AppError("Unauthorized",401);
+            }
+
+            await revocationToken(token);
+        }
+        catch(error){
+            if(error instanceof AppError){
+                throw error
+            }
+             throw new AppError("Unauthorized",401);
+        }
+
+}
+
+export const ServiceLogoutAll = async(token:string)=>{
+
+    try{
+
+        const checkToken = jwt.verify(token,JWT_REFRESH_KEY) as RefreshTokenPayload
+
+        if(!checkToken.userId){
+            throw new AppError("Unauthorized User",401);
+        }
+
+        const user = await userDataFromRefresh(token);
+
+        if(!user || user.revoked === true){
+            throw new AppError("Unauthorized",401);
+        }
+
+         await revocationTokenAll(checkToken.userId);
+    }
+    catch(error){
         if(error instanceof AppError){
             throw error
         }

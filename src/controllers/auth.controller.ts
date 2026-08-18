@@ -1,5 +1,5 @@
 import type {Request,Response} from 'express';
-import { ServiceResgister,ServiceLogin,ServiceProfile,ServiceDelete,ServiceRefresh} from '../services/auth.service.js';
+import { ServiceResgister,ServiceLogin,ServiceProfile,ServiceDelete,ServiceRefresh,ServiceLogout,ServiceLogoutAll} from '../services/auth.service.js';
 
 
 export const register = async (req:Request,res:Response) =>{
@@ -62,6 +62,7 @@ export const deleteUser = async(req:Request,res:Response)=>{
 }
 
 export const refresh = async(req:Request,res:Response)=>{
+
         const {refreshtoken} = req.body;
 
         const token = await ServiceRefresh(refreshtoken);
@@ -70,8 +71,30 @@ export const refresh = async(req:Request,res:Response)=>{
             message:"Accesstoken created successfully",
             accesstoken:token
         })
+
 }
 
+export const logout = async(req:Request,res:Response)=>{
+
+        const {refreshtoken} = req.body;
+        await ServiceLogout(refreshtoken)
+
+        return res.status(200).json({
+            message:"User Logout successfully",
+        })
+}
+
+export const logoutAll = async(req:Request,res:Response)=>{
+
+        const {refreshtoken} = req.body;
+        await ServiceLogoutAll(refreshtoken)
+
+        return res.status(200).json({
+            message:"User Logout successfully & revoked all",
+        })
+}
+
+ 
 
 // if the user return the value line 11 will get executed 
 
