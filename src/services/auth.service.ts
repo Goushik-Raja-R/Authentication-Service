@@ -8,7 +8,7 @@ import type { AuthUser,RefreshTokenPayload } from '../types/auth.types.js';
 
 import { existingUser,createUser,getUserProfile,
     userDeletion,refreshUser,userDataFromRefresh,revocationToken,revocationTokenAll } from '../repositories/auth.repository.js';
-import { error } from 'node:console';
+
 
 
 export const ServiceResgister = async(user:RegisterUser)=>{
