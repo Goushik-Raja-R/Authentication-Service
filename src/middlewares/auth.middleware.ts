@@ -13,6 +13,7 @@ export const authMiddleware = (req:Request,res:Response,next:NextFunction)=>{
         if(!authHeader){
             throw new AppError("Unauthorized",401);
         }
+         
 
         const token = authHeader.trim().split(" ");
 
@@ -25,6 +26,7 @@ export const authMiddleware = (req:Request,res:Response,next:NextFunction)=>{
         try{
             const result =  jwt.verify(checkToken,JWT_SECRET_KEY) as AuthUser;
             req.user = result;
+            
             next();
         }
         catch(error){

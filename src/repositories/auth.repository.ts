@@ -76,3 +76,10 @@ export const revocationTokenAll = async(user_id:number)=>{
             [user_id]
         )
 }
+
+export const deleteExpiredRefreshTokens = async()=>{
+        await pool.query(
+            `DELETE FROM refresh_token
+            WHERE expires_at < NOW() `
+        )
+}

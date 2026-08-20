@@ -29,6 +29,7 @@ export const profile = async(req:Request,res:Response)=>{
                     message:"Unauthorized user"
                 })
             }
+
             const user = await ServiceProfile(req.user);
 
             return res.status(200).json({
@@ -69,7 +70,7 @@ export const refresh = async(req:Request,res:Response)=>{
 
         return res.status(200).json({
             message:"Accesstoken created successfully",
-            accesstoken:token
+            data:token
         })
 
 }

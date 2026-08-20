@@ -48,7 +48,7 @@ export const ServiceLogin = async(user:LoginUser)=>{
         
         const passCheck = await bcrypt.compare(user.password,checkUser.password) 
 
-        const options:SignOptions = {expiresIn:'15m'}
+        const AccOptions:SignOptions = {expiresIn:'15m'}
         const refOption:SignOptions = {expiresIn:'7d'}
 
         if(passCheck){
@@ -56,7 +56,7 @@ export const ServiceLogin = async(user:LoginUser)=>{
                 {userId:checkUser.id,
                 role:checkUser.role},
                 JWT_SECRET_KEY,
-                options
+                AccOptions
             );
 
             const refreshtoken = jwt.sign(
