@@ -1,8 +1,9 @@
 import pool from "../config/database.js";
 import type { RegisterUser,RefreshTokenUser } from "../types/user.types.js";
 
-export const existingUser = async(email:string)=>{
 
+export const existingUser = async(email:string)=>{
+    
         const result = await pool.query(
             `SELECT * FROM USERS WHERE email =$1`,
             [email]
@@ -12,11 +13,24 @@ export const existingUser = async(email:string)=>{
 
 export const createUser = async(newuser:RegisterUser)=>{
 
-    const result = await pool.query(
-        `INSERT INTO USERS(name,email,password,role) VALUES($1,$2,$3,$4) RETURNING id,name,email,role`,
-        [newuser.name,newuser.email,newuser.password,newuser.role]
-    )
-        return result.rows[0];
+    try{
+        const result = await pool.query(
+            `INSERT INTO USERS(name,email,password,role) VALUES($1,$2,$3,$4) RETURNING id,name,email,role`,
+            [newuser.name,newuser.email,newuser.password,newuser.role]
+        )
+            return result.rows[0];
+    }
+    catch(error){
+        if(typeof error === "object" && error !== null){
+            if("code" in error && error.code === "23505" && "constraint" in error){
+                throw {
+                    code:error.code,
+                    constraint:error.constraint
+                }
+            }
+        }
+        throw error
+    }
 }
 
 export const getUserProfile = async(userID:number)=>{
@@ -79,7 +93,7 @@ export const revocationTokenAll = async(user_id:number)=>{
 
 export const deleteExpiredRefreshTokens = async()=>{
         await pool.query(
-            `DELETE FROM refresh_token
+            `DELETE FROM refresh_tokens
             WHERE expires_at < NOW() `
         )
 }

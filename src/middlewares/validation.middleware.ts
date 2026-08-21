@@ -1,29 +1,36 @@
 import type { Request,Response,NextFunction } from "express";
+import AppError from "../errors/AppError.js";
 
 export const registerMiddleware = (req:Request,res:Response,next:NextFunction)=>{
 
         const {name,email,password,role} = req.body
 
-        if(typeof name === "string" && typeof email === "string" && typeof password === "string" && (role ==="USER" || role ==="ADMIN")){
+        if(typeof name === "string" && typeof email === "string" && typeof password === "string"){
 
             const checkName:boolean = isValidName(name);
             const checkEmail:boolean = isValidEmail(email);
             const checkPassword:boolean = isValidPassword (password);
             const checkRole:boolean = isValidRole(role);
 
-            
+            if(checkName === false){
+                throw new AppError("Invalid Name",400);
+            }
 
-            if(checkName === false || checkEmail === false || checkPassword === false || checkRole === false){
-                return res.status(400).json({
-                    message:"Invalid User Details"
-                })
+            if(checkEmail === false){
+                throw new AppError("Invalid Email",400);
+            }
+
+            if(checkPassword === false){
+                throw new AppError("Invalid Password",400);
+            }
+
+            if(checkRole === false){
+                throw new AppError("Invalid Role",400);
             }
               next();
         }
         else{
-            return res.status(400).json({
-                message:"Invalid User Details"
-            })
+            throw new AppError("Invalid User Details",400)
         }
 }
 
@@ -35,17 +42,17 @@ export const loginMiddleware = (req:Request,res:Response,next:NextFunction)=>{
             const checkEmail:boolean = isValidEmail(email);
             const checkPassword:boolean = password.length >0;
 
-            if(checkEmail === false || checkPassword === false){
-                 return res.status(400).json({
-                    message:"Invalid User Details"
-                })
+            if(checkEmail === false){
+                throw new AppError("Invalid email",400);
+            }
+
+            if(checkPassword === false){
+                throw new AppError("Invalid Password",400)
             }
             next();
         }
         else{
-             return res.status(400).json({
-                    message:"Invalid User Details"
-                })
+             throw new AppError("Invalid Login Details",400);
         }
 }
 
@@ -57,9 +64,7 @@ export const refreshMiddleware = (req:Request,res:Response,next:NextFunction)=>{
             next();
         }
          else{
-             return res.status(400).json({
-                    message:"Invalid User Details"
-                })
+            throw new AppError("Invalid Token",400);
         }
 }
 

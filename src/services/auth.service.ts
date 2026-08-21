@@ -28,13 +28,19 @@ export const ServiceResgister = async(user:RegisterUser)=>{
             role:user.role
         })
 
-        const result = await createUser(userWithHashedPassword);
+        try{
 
-        if(result){
+            const result = await createUser(userWithHashedPassword);
             return result;
-        }
 
-        throw new AppError ("Error Occured while creation of user",500);
+        }catch(error){
+            if(typeof error === "object" && error !== null){
+                if("code" in error && "constraint" in error && error.code === "23505" && error.constraint ==="users_email_key"){
+                    throw new AppError("Email is already registered",409)
+                }
+            }
+              throw new AppError ("Internal Server Error",500);
+        }
 
 }
 

@@ -8,7 +8,7 @@ ConnectionAndCleanup();
 
 async function ConnectionAndCleanup() {
         await testDatabaseConnection();
-        cleanupTask();
+        await cleanupTask();
         setInterval(cleanupTask, 60 * 60 * 1000);
 
         app.listen(PORT,()=>{
@@ -17,5 +17,5 @@ async function ConnectionAndCleanup() {
 
 }
 
-
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQ1LCJpYXQiOjE3ODcyODkyNzEsImV4cCI6MTc4Nzg5NDA3MX0.AoFFGgsnUY-360mvjkpJfyPGmXzT29X_1JSWA6VKTNY
 
