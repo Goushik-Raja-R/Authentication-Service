@@ -2,6 +2,9 @@ import express from 'express';
 const app = express();
 import router from './routes/index.js';
 import { errorHandler } from './middlewares/error.middleware.js';
+import helmet from 'helmet';
+
+app.use(helmet());
 
 app.use(express.json());
 

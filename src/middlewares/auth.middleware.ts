@@ -33,3 +33,22 @@ export const authMiddleware = (req:Request,res:Response,next:NextFunction)=>{
             throw new AppError("Unauthorized",401);
         }
 }
+
+export const authorizeDeleteUser = (req:Request,res:Response,next:NextFunction)=>{
+
+        if(req.user?.role === "ADMIN"){
+            return next();
+        }
+        else{
+            if(req.user?.role === "USER"){
+                const userId:number = Number(req.params.id);
+                if(isNaN(userId)){
+                    throw new AppError("Invalid User ID",400);
+                }
+                if(req.user.userId === userId){
+                    return next();
+                }
+            }
+        }
+        throw new AppError("Forbidden",403);
+}
