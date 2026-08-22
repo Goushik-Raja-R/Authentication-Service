@@ -17,15 +17,20 @@ if(!PORT || !DB_HOST || !DB_PORT  || !DB_NAME  || !DB_USER  || !DB_PASSWORD || !
 }
 
 
-const PORT_NUMBER = parseInt(PORT,10);
-const DB_PORT_NUMBER = parseInt(DB_PORT,10);
+const PORT_NUMBER = Number(PORT);
+const DB_PORT_NUMBER = Number(DB_PORT);
 const JWT_SECRET_KEY:string = JWT_SECRET;
 const JWT_REFRESH_KEY:string = JWT_REFRESH_SECRET
 
+    if(!Number.isInteger(PORT_NUMBER) || !Number.isInteger(DB_PORT_NUMBER)){
+        console.log("INVALID PORT or DB PORT VALUE");
+        process.exit(1);
+    }
 
-if(isNaN(PORT_NUMBER) || isNaN(DB_PORT_NUMBER)){
-    console.error("Invalid PORT value.");
-    process.exit(1);
-}
+    if(PORT_NUMBER < 1 || PORT_NUMBER > 65535 || DB_PORT_NUMBER < 1 || DB_PORT_NUMBER > 65535){
+        console.log("INVALID PORT or DB PORT VALUE");
+        process.exit(1);
+    }
 
-export {PORT,DB_HOST,DB_PORT_NUMBER,DB_NAME,DB_USER,DB_PASSWORD,JWT_SECRET_KEY,JWT_REFRESH_KEY};
+
+export {PORT_NUMBER,DB_HOST,DB_PORT_NUMBER,DB_NAME,DB_USER,DB_PASSWORD,JWT_SECRET_KEY,JWT_REFRESH_KEY};

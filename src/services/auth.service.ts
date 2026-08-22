@@ -152,7 +152,7 @@ export const ServiceRefresh = async(token:string)=>{
             newRefreshOption
         )
 
-        const expireTime:Date = new Date(Date.now()+ 7 * 24 * 60 * 60 * 100)
+        const expireTime:Date = new Date(Date.now()+ 7 * 24 * 60 * 60 * 1000)
 
         const newRefToken =({
             user_id:checkToken.userId,
