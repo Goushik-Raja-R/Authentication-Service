@@ -3,14 +3,13 @@ import AppError from "../errors/AppError.js";
 
 export const registerMiddleware = (req:Request,res:Response,next:NextFunction)=>{
 
-        const {name,email,password,role} = req.body
+        const {name,email,password} = req.body
 
         if(typeof name === "string" && typeof email === "string" && typeof password === "string"){
 
             const checkName:boolean = isValidName(name);
             const checkEmail:boolean = isValidEmail(email);
             const checkPassword:boolean = isValidPassword (password);
-            const checkRole:boolean = isValidRole(role);
 
             if(checkName === false){
                 throw new AppError("Invalid Name",400);
@@ -22,10 +21,6 @@ export const registerMiddleware = (req:Request,res:Response,next:NextFunction)=>
 
             if(checkPassword === false){
                 throw new AppError("Invalid Password",400);
-            }
-
-            if(checkRole === false){
-                throw new AppError("Invalid Role",400);
             }
               next();
         }
@@ -91,12 +86,4 @@ function isValidPassword(password:string):boolean{
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{9,}$/;
 
     return passwordRegex.test(password);
-}
-
-function isValidRole(role:"USER" | "ADMIN"):boolean{
-    
-    if(role === "ADMIN" || role === "USER"){
-        return true
-    }
-    return false;
 }

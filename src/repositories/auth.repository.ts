@@ -15,8 +15,8 @@ export const createUser = async(newuser:RegisterUser)=>{
 
     try{
         const result = await pool.query(
-            `INSERT INTO USERS(name,email,password,role) VALUES($1,$2,$3,$4) RETURNING id,name,email,role`,
-            [newuser.name,newuser.email,newuser.password,newuser.role]
+            `INSERT INTO USERS(name,email,password) VALUES($1,$2,$3) RETURNING id,name,email,role`,
+            [newuser.name,newuser.email,newuser.password]
         )
             return result.rows[0];
     }

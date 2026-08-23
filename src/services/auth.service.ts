@@ -24,12 +24,10 @@ export const ServiceResgister = async(user:RegisterUser)=>{
         const userWithHashedPassword =({
             name:user.name,
             email:user.email,
-            password:hashedpassword,
-            role:user.role
+            password:hashedpassword
         })
 
         try{
-
             const result = await createUser(userWithHashedPassword);
             return result;
 

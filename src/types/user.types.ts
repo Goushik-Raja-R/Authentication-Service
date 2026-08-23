@@ -8,8 +8,7 @@ export interface LoginUser{
 export interface RegisterUser{
     name:string,
     email:string,
-    password:string,
-    role:"USER"|"ADMIN"
+    password:string
 }
 
 export interface RefreshTokenUser{
