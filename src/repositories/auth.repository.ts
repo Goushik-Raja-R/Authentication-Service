@@ -1,6 +1,6 @@
 import pool from "../config/database.js";
 import type { RegisterUser,RefreshTokenUser } from "../types/user.types.js";
-
+import { hashRefreshToken } from "../utils/hashRefreshToken.js";
 
 export const existingUser = async(email:string)=>{
     
@@ -57,15 +57,17 @@ export const refreshUser = async(user:RefreshTokenUser)=>{
     
         await pool.query(
         `INSERT INTO refresh_tokens(user_id,token,expires_at) VALUES($1,$2,$3)`,
-        [user.user_id,user.token,user.expires_at]
+        [user.user_id,hashRefreshToken(user.token),user.expires_at]
     )
 }
 
 export const userDataFromRefresh = async(token:string)=>{
 
+        const hashedToken = hashRefreshToken(token)
+
         const result = await pool.query(
             `SELECT *FROM refresh_tokens WHERE token = $1`,
-            [token]
+             [hashedToken]
         )
 
         return result.rows[0];
@@ -73,11 +75,13 @@ export const userDataFromRefresh = async(token:string)=>{
 
 export const revocationToken = async(token:string)=>{
 
+        const hashedToken = hashRefreshToken(token);
+
         await pool.query(
             `UPDATE refresh_tokens
              SET revoked = TRUE
              WHERE token = $1 `,
-             [token]
+             [hashedToken]
         )
 }
 
