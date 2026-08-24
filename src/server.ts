@@ -4,19 +4,34 @@ import { cleanupTask } from './jobs/refreshTokenCleanup.js';
 import pool from './config/database.js';
 import {PORT_NUMBER} from './config/env.js'
 import type { Server } from 'node:http';
+import { logger } from './utils/logger.js';
 
-let Interval: NodeJS.Timeout | undefined;
+let cleanupInterval: NodeJS.Timeout | undefined;
 let server:Server | undefined;
 let isShuttingDown:boolean = false;
 
-process.on("uncaughtException",(error)=>{
-        console.error("UNCAUGHT EXCEPTION: ",error); 
-        graceFulShutdown();
+process.on("SIGTERM",async()=>{
+        logger.info("SIGTERM RECEIVED"); 
+        await gracefulShutdown();
+        process.exit(0);
 })
 
-process.on("unhandledRejection",(error)=>{
-        console.error("UNHANDLED REJECTION: ",error);
-        graceFulShutdown();
+process.on("SIGINT",async()=>{
+        logger.info("SIGINT RECEIVED"); 
+        await gracefulShutdown();
+        process.exit(0);
+})
+
+process.on("uncaughtException",async(error)=>{
+        logger.error("UNCAUGHT EXCEPTION ",error); 
+        await gracefulShutdown();
+        process.exit(1);
+})
+
+process.on("unhandledRejection",async(error)=>{
+        logger.error("UNHANDLED REJECTION ",error);
+        await gracefulShutdown();
+        process.exit(1);
 })
 
 ConnectionAndCleanup();
@@ -24,14 +39,14 @@ ConnectionAndCleanup();
 async function ConnectionAndCleanup() {
         await testDatabaseConnection();
         await cleanupTask();
-        Interval = setInterval(cleanupTask, 60 * 60 * 1000);
+        cleanupInterval = setInterval(cleanupTask, 60 * 60 * 1000);
 
         server = app.listen(PORT_NUMBER,()=>{
-             console.log(`Server Running on PORT: ${PORT_NUMBER}`)
+             logger.info(`Server Running on PORT: ${PORT_NUMBER}`)
         })
 }
 
-async function graceFulShutdown() {
+async function gracefulShutdown() {
 
         if(isShuttingDown){
             return;
@@ -53,14 +68,13 @@ async function graceFulShutdown() {
         }
         }
         catch(error){
-            console.log("ERROR OCCURED WHILE CLOSING THE SERVER: ",error)
+            logger.error("ERROR OCCURED WHILE CLOSING THE SERVER: ",error)
         }
 
-        if(Interval){
-            clearInterval(Interval);
+        if(cleanupInterval){
+            clearInterval(cleanupInterval);
         }
 
         try{ await pool.end()}
-        catch(error){console.log("ERROR OCCURED WHILE CLOSING THE DB: ",error)}
-        process.exit(1);
+        catch(error){logger.error("ERROR OCCURED WHILE CLOSING THE DB: ",error)}
 }

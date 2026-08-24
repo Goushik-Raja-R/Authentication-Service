@@ -4,6 +4,9 @@ import router from './routes/index.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 import helmet from 'helmet';
 import { limiter } from './middlewares/rateLimit.middleware.js';
+import { requestLogger } from './middlewares/reqLogger.js';
+
+app.use(requestLogger);
 
 app.use(helmet());
 
