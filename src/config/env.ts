@@ -22,8 +22,13 @@ const JWT_REFRESH_KEY:string = JWT_REFRESH_SECRET
         process.exit(1);
     }
 
+    if(JWT_SECRET_KEY.length < 32 || JWT_REFRESH_KEY.length < 32){
+        console.error("JWT SECRETS MUST BE ATLEAST 32 CHARACTERS LONG.");
+        process.exit(1);
+    }
+
     if(PORT_NUMBER < 1 || PORT_NUMBER > 65535){
-        console.log("INVALID PORT NU<BEr");
+        console.log("INVALID PORT NUMBER");
         process.exit(1);
     }
 

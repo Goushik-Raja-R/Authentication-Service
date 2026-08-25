@@ -1,12 +1,15 @@
 import type { Request,Response,NextFunction } from "express";
-import type { RegisterUser } from "../types/user.types.js";
 import AppError from "../errors/AppError.js";
 
 export const registerMiddleware = (req:Request,res:Response,next:NextFunction)=>{
 
         const allowedFields = ['name','email','password'];
 
-        if(req.body !== Object && req.body === null){
+        if( typeof req.body !== 'object' || req.body === null || Array.isArray(req.body)){
+            throw new AppError("Invalid User Details",400)
+        }
+
+        if(allowedFields.length !== Object.keys(req.body).length){
             throw new AppError("Invalid User Details",400)
         }
 
@@ -18,7 +21,7 @@ export const registerMiddleware = (req:Request,res:Response,next:NextFunction)=>
             throw new AppError("Invalid User Details",400)
         }
 
-        const {name,email,password} = req.body as RegisterUser
+        const {name,email,password} = req.body
 
         if(typeof name === "string" && typeof email === "string" && typeof password === "string"){
 
@@ -46,6 +49,24 @@ export const registerMiddleware = (req:Request,res:Response,next:NextFunction)=>
 
 export const loginMiddleware = (req:Request,res:Response,next:NextFunction)=>{
 
+        const allowedfields = ['email','password']
+
+        if(typeof req.body !== 'object' || req.body === null || Array.isArray(req.body)){
+            throw new AppError("Invalid login Credentials",400)
+        }
+
+        if(allowedfields.length !== Object.keys(req.body).length){
+            throw new AppError("Invalid login Credentials",400)
+        }
+
+        const isValidFields = Object.keys(req.body).every((key)=>{
+            return allowedfields.includes(key);
+        })
+
+        if(isValidFields === false){
+            throw new AppError("Invalid login Credentials",400)
+        }
+
         const {email,password} = req.body;
 
         if(typeof email === "string" && typeof password === "string"){
@@ -67,6 +88,24 @@ export const loginMiddleware = (req:Request,res:Response,next:NextFunction)=>{
 }
 
 export const refreshMiddleware = (req:Request,res:Response,next:NextFunction)=>{
+
+        const allowedFields = ['refreshtoken'];
+
+        if(req.body === null){
+            throw new AppError("Invalid Token",400);
+        }
+
+        if(Object.keys(req.body).length !== allowedFields.length){
+            throw new AppError("Invalid Token",400);
+        }
+
+        const isvalidFields = Object.keys(req.body).every((key)=>{
+            return allowedFields.includes(key);
+        })
+
+        if(isvalidFields === false){
+            throw new AppError("Invalid Token",400);
+        }
         
         const {refreshtoken} = req.body;
 

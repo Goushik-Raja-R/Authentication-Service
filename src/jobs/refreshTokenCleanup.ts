@@ -1,13 +1,13 @@
-
 import { deleteExpiredRefreshTokens } from "../repositories/auth.repository.js";
+import { logger } from "../utils/logger.js";
 
 async function cleanupTask() {
     try{
         await deleteExpiredRefreshTokens();
-        console.log("Cleanup Done");
+        logger.info("Cleanup Done");
     }
     catch(error){
-        console.log(error);
+        logger.error("ERROR OCCURRED WHILE CLEANING UP",error);
     }
 }
 

@@ -4,6 +4,14 @@ import { logger } from "../utils/logger.js";
 
 export const errorHandler = (error:unknown,req:Request,res:Response,next:NextFunction) =>{
 
+    if(typeof error === 'object'&& error !== null && 'type' in error && error.type === "entity.too.large"){
+        logger.warn(`${req.reqId} ${req.method} ${req.url} Request body too large`)
+
+        return res.status(413).json({
+            message:"Payload Too Large"
+        })
+    }
+
     if(error instanceof AppError){
 
         logger.warn(`${req.reqId} ${req.method} ${req.url} ${error.message} ${error.statusCode}`)

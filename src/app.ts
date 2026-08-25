@@ -14,7 +14,7 @@ app.use(helmet());
 
 app.use(limiter)
 
-app.use(express.json());
+app.use(express.json({limit:'10kb'}));
 
 app.use('/api/v1',router);
 

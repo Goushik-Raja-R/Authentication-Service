@@ -24,7 +24,16 @@ export const authMiddleware = (req:Request,res:Response,next:NextFunction)=>{
         }
 
         try{
-            const result =  jwt.verify(checkToken,JWT_SECRET_KEY) as AuthUser;
+            const result =  jwt.verify(checkToken,JWT_SECRET_KEY,{ algorithms:['HS256']}) as AuthUser;
+
+            if(result.userId === null || typeof result.userId !== 'number' || (result.role !== "USER" && result.role !== "ADMIN")){
+                 throw new AppError("Unauthorized",401);
+            }
+
+            if(!Number.isInteger(result.userId) || result.userId <= 0){
+                throw new AppError("Unauthorized",401);
+            }
+            
             req.user = result;
             
             next();

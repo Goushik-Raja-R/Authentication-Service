@@ -52,8 +52,8 @@ export const ServiceLogin = async(user:LoginUser)=>{
         
         const passCheck = await bcrypt.compare(user.password,checkUser.password) 
 
-        const AccOptions:SignOptions = {expiresIn:'15m'}
-        const refOption:SignOptions = {expiresIn:'7d'}
+        const AccOptions:SignOptions = {expiresIn:'15m',algorithm:'HS256'}
+        const refOption:SignOptions = {expiresIn:'7d',algorithm:'HS256'}
 
         if(passCheck){
             const accesstoken = jwt.sign(
@@ -117,7 +117,7 @@ export const ServiceRefresh = async(token:string)=>{
 
  
         try{
-            const checkToken = jwt.verify(token,JWT_REFRESH_KEY) as RefreshTokenPayload
+            const checkToken = jwt.verify(token,JWT_REFRESH_KEY,{algorithms:['HS256']}) as RefreshTokenPayload
 
         if(!checkToken.userId){
             throw new AppError("Unauthorized",401);
@@ -134,8 +134,8 @@ export const ServiceRefresh = async(token:string)=>{
 
         await revocationToken(token);
 
-        const newRefreshOption:SignOptions = {expiresIn:'7d'}
-        const newAccessOption:SignOptions = {expiresIn:'15m'}
+        const newRefreshOption:SignOptions = {expiresIn:'7d',algorithm:'HS256'}
+        const newAccessOption:SignOptions = {expiresIn:'15m',algorithm:'HS256'}
 
         const newAccessToken = jwt.sign({
                 userId:checkToken.userId,
@@ -174,7 +174,7 @@ export const ServiceRefresh = async(token:string)=>{
 export const ServiceLogout = async(token:string)=>{
         
         try{
-            const checkToken = jwt.verify(token,JWT_REFRESH_KEY) as RefreshTokenPayload
+            const checkToken = jwt.verify(token,JWT_REFRESH_KEY,{algorithms:['HS256']}) as RefreshTokenPayload
 
             if(!checkToken.userId){
                 throw new AppError("Unauthorized User",401);
@@ -201,7 +201,7 @@ export const ServiceLogoutAll = async(token:string)=>{
 
     try{
 
-        const checkToken = jwt.verify(token,JWT_REFRESH_KEY) as RefreshTokenPayload
+        const checkToken = jwt.verify(token,JWT_REFRESH_KEY,{algorithms:['HS256']}) as RefreshTokenPayload
 
         if(!checkToken.userId){
             throw new AppError("Unauthorized User",401);
