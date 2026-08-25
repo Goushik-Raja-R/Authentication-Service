@@ -1,9 +1,24 @@
 import type { Request,Response,NextFunction } from "express";
+import type { RegisterUser } from "../types/user.types.js";
 import AppError from "../errors/AppError.js";
 
 export const registerMiddleware = (req:Request,res:Response,next:NextFunction)=>{
 
-        const {name,email,password} = req.body
+        const allowedFields = ['name','email','password'];
+
+        if(req.body !== Object && req.body === null){
+            throw new AppError("Invalid User Details",400)
+        }
+
+        const isValidFields = Object.keys(req.body).every((key)=>{
+            return allowedFields.includes(key);
+        })
+
+        if(isValidFields === false){
+            throw new AppError("Invalid User Details",400)
+        }
+
+        const {name,email,password} = req.body as RegisterUser
 
         if(typeof name === "string" && typeof email === "string" && typeof password === "string"){
 

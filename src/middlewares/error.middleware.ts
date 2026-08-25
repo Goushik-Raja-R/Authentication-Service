@@ -6,13 +6,13 @@ export const errorHandler = (error:unknown,req:Request,res:Response,next:NextFun
 
     if(error instanceof AppError){
 
-        logger.warn(`${req.method} ${req.url} ${error.message} ${error.statusCode}`)
+        logger.warn(`${req.reqId} ${req.method} ${req.url} ${error.message} ${error.statusCode}`)
 
         return res.status(error.statusCode).json({
             message:error.message
         })
     }else{
-        logger.error("UNEXPECTED APPLICATION ERROR",error);
+        logger.error(`${req.reqId} ${req.method} ${req.url}`,error);
         return res.status(500).json({
             message:"Internal Server Error"
         })

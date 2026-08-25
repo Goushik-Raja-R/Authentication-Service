@@ -13,7 +13,7 @@ export const requestLogger = (req:Request,res:Response,next:NextFunction)=>{
         const statusCode = res.statusCode;
         const duration = endTime-startTime
 
-        logger.info(`${method} ${url}/ ${statusCode} ${duration}ms`)
+        logger.info(`${req.reqId} ${method} ${url}/ ${statusCode} ${duration}ms`)
     })
     next();
 }
