@@ -5,7 +5,7 @@ import pool from './config/database.js';
 import {PORT_NUMBER} from './config/env.js'
 import type { Server } from 'node:http';
 import { logger } from './utils/logger.js';
-import { error } from 'node:console';
+
 
 let cleanupInterval: NodeJS.Timeout | undefined;
 let server:Server | undefined;
