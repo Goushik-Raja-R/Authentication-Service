@@ -93,7 +93,7 @@ const SECRET = "mySecret123";
 Correct:
 
 ```env
-JWT_SECRET=mySecret123
+JWT_SECRET=<your-jwt-secret>
 ```
 
 ---
