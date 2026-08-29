@@ -1,8 +1,9 @@
 import dotenv from 'dotenv'
 dotenv.config();
+import fs from "node:fs"
 
 const PORT = process.env.PORT;
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET?? fs.readFileSync("/run/secrets/jwt_secret","utf-8").trim();
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const DATABASE_URL = process.env.DATABASE_URL
 

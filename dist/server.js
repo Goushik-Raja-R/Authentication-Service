@@ -4,7 +4,6 @@ import { cleanupTask } from './jobs/refreshTokenCleanup.js';
 import pool from './config/database.js';
 import { PORT_NUMBER } from './config/env.js';
 import { logger } from './utils/logger.js';
-import { error } from 'node:console';
 let cleanupInterval;
 let server;
 let isShuttingDown = false;

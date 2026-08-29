@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:18
+    env_file:
+      - .env.postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql 
+    networks:
+      - authentication-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d authentication_management"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  authentication-service:
+    image: authentication-service
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    networks:
+      - authentication-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    secrets:
+      - jwt_secret
+
+
+networks:
+ authentication-network:
+
+volumes:
+  postgres-data:
+
+secrets:
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
