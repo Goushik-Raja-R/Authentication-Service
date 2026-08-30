@@ -18,6 +18,9 @@ services:
       retries: 5
       start_period: 10s
   authentication-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: authentication-service
     env_file:
       - .env
