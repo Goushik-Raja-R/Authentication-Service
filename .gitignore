@@ -1,7 +1,8 @@
+node_modules/
 
-Ignored files:
-  (use "git add -f <file>..." to include in what will be committed)
-        .env
-        .env.postgres
-        secrets/
-        node_modules/
+.env
+.env.postgres
+
+secrets/
+
+dist/

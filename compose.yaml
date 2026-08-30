@@ -3,6 +3,10 @@ services:
     image: postgres:18
     env_file:
       - .env.postgres
+    secrets:
+      - postgres_password
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
     volumes:
       - postgres-data:/var/lib/postgresql 
     networks:
@@ -26,6 +30,8 @@ services:
         condition: service_healthy
     secrets:
       - jwt_secret
+      - jwt_refresh_secret
+      - postgres_password
 
 
 networks:
@@ -37,3 +43,9 @@ volumes:
 secrets:
   jwt_secret:
     file: ./secrets/jwt_secret.txt
+
+  jwt_refresh_secret:
+    file: ./secrets/jwt_refresh_secret.txt
+
+  postgres_password:
+    file: ./secrets/postgres_password.txt
