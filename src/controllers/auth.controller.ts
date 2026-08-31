@@ -31,6 +31,8 @@ export const profile = async(req:Request,res:Response)=>{
 
             const user = await ServiceProfile(req.user);
 
+            console.log(user);
+
             return res.status(200).json({
                 message:"User Data",
                 data:user
