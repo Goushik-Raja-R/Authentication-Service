@@ -82,7 +82,15 @@ export const revocationToken = async(token:string)=>{
              SET revoked = TRUE
              WHERE token = $1 `,
              [hashedToken]
-        )
+
+        //      `UPDATE refresh_tokens
+        //         SET revoked = TRUE
+        //         WHERE token = $1,${[hashedToken]}
+        //         AND revoked = FALSE
+        //         AND expires_at > NOW()
+        //         RETURNING user_id;`
+        //
+         )
 }
 
 export const revocationTokenAll = async(user_id:number)=>{

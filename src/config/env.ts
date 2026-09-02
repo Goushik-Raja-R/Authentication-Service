@@ -5,31 +5,41 @@ dotenv.config();
 
 const PORT = process.env.PORT;
 
-const JWT_SECRET =
-    process.env.JWT_SECRET ??
-    fs.readFileSync("/run/secrets/jwt_secret", "utf-8").trim();
+function readSecret(envName: string,secretName: string):string{
+    const envValue = process.env[envName]
 
-const JWT_REFRESH_SECRET =
-    process.env.JWT_REFRESH_SECRET ??
-    fs.readFileSync("/run/secrets/jwt_refresh_secret", "utf-8").trim();
+    if(envValue){
+        return envValue;
+    }
+
+    const secretPath = `/run/secrets/${secretName}`;
+
+    if(fs.existsSync(secretPath)){
+        return fs.readFileSync(secretPath,"utf-8").trim();
+    }
+
+    return "";
+}
+
+const JWT_SECRET_KEY = readSecret("JWT_SECRET","jwt_secret");
+
+const JWT_REFRESH_KEY = readSecret("JWT_REFRESH_SECRET","jwt_refresh_secret");
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
-const POSTGRES_PASSWORD =
-    process.env.POSTGRES_PASSWORD ??
-    fs.readFileSync("/run/secrets/postgres_password", "utf-8").trim();
+const POSTGRES_PASSWORD = readSecret("POSTGRES_PASSWORD","postgres_password");
 
 if (!PORT) {
     console.error("PORT is missing.");
     process.exit(1);
 }
 
-if (!JWT_SECRET) {
+if (!JWT_SECRET_KEY) {
     console.error("JWT_SECRET is missing.");
     process.exit(1);
 }
 
-if (!JWT_REFRESH_SECRET) {
+if (!JWT_REFRESH_KEY) {
     console.error("JWT_REFRESH_SECRET is missing.");
     process.exit(1);
 }
@@ -46,21 +56,14 @@ if (!POSTGRES_PASSWORD) {
 
 const DATABASE_URL_STRING: string = DATABASE_URL;
 const PORT_NUMBER = Number(PORT);
-const JWT_SECRET_KEY:string = JWT_SECRET;
-const JWT_REFRESH_KEY:string = JWT_REFRESH_SECRET
 
-    if(typeof POSTGRES_PASSWORD !== 'string'){
-        console.log("INVALID POSTGRES PASSWORD");
-        process.exit(1);
-    }
-
-    if(!Number.isInteger(PORT_NUMBER)){
+    if (!Number.isInteger(PORT_NUMBER)){
         console.log("INVALID PORT NUMBER");
         process.exit(1);
     }
 
     if(JWT_SECRET_KEY.length < 32 || JWT_REFRESH_KEY.length < 32){
-        console.error("JWT SECRETS MUST BE ATLEAST 32 CHARACTERS LONG.");
+        console.error("JWT SECRETS MUST BE AT LEAST 32 CHARACTERS LONG.");
         process.exit(1);
     }
 
