@@ -11,4 +11,5 @@ WORKDIR /app
 COPY package.json package-lock.json /app/
 RUN npm ci --omit dev
 COPY --from=builder /app/dist /app/dist
+USER node
 CMD [ "npm", "start" ]

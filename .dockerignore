@@ -1,7 +1,13 @@
 node_modules
+
 .env
+.env.postgres
+secrets/
+
 .git
+
 .obsidian
 Development Difficulties & Resolutions
 docs
+
 dist
