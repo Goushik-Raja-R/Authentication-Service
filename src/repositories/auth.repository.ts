@@ -1,3 +1,4 @@
+import { Result } from "pg";
 import pool from "../config/database.js";
 import type { RegisterUser,RefreshTokenUser } from "../types/user.types.js";
 import { hashRefreshToken } from "../utils/hashRefreshToken.js";
@@ -77,20 +78,20 @@ export const revocationToken = async(token:string)=>{
 
         const hashedToken = hashRefreshToken(token);
 
-        await pool.query(
-            `UPDATE refresh_tokens
-             SET revoked = TRUE
-             WHERE token = $1 `,
-             [hashedToken]
-
-        //      `UPDATE refresh_tokens
-        //         SET revoked = TRUE
-        //         WHERE token = $1,${[hashedToken]}
-        //         AND revoked = FALSE
-        //         AND expires_at > NOW()
-        //         RETURNING user_id;`
-        //
+        const result = await pool.query(
+             `UPDATE refresh_tokens rt
+                SET revoked = TRUE
+                FROM users u
+                WHERE rt.token = $1
+                AND rt.revoked = FALSE
+                AND rt.expires_at > NOW()
+                AND rt.user_id = u.id
+                RETURNING rt.user_id, u.role;`,
+                [hashedToken]
          )
+
+         return result.rows[0];
+         
 }
 
 export const revocationTokenAll = async(user_id:number)=>{

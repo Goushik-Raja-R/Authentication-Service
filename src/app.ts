@@ -12,7 +12,7 @@ app.use(requestLogger);
 
 app.use(helmet());
 
-app.use(limiter)
+app.use(limiter);
 
 app.use(express.json({limit:'10kb'}));
 

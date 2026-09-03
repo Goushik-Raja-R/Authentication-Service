@@ -114,8 +114,6 @@ export const ServiceDelete = async(userID:number)=>{
 }
 
 export const ServiceRefresh = async(token:string)=>{
-
- 
         try{
             const checkToken = jwt.verify(token,JWT_REFRESH_KEY,{algorithms:['HS256']}) as RefreshTokenPayload
 
@@ -123,29 +121,24 @@ export const ServiceRefresh = async(token:string)=>{
             throw new AppError("Unauthorized",401);
         }
 
-        const user = await userDataFromRefresh(token)
+        const UserData = await revocationToken(token);
 
-        const currentTime:Date = new Date();
-
-
-        if(!user || user.revoked === true || user.expires_at < currentTime){
-            throw new AppError("Unauthorized",401);
+        if(!UserData){
+            throw new AppError("Unauthorized",401)
         }
-
-        await revocationToken(token);
 
         const newRefreshOption:SignOptions = {expiresIn:'7d',algorithm:'HS256'}
         const newAccessOption:SignOptions = {expiresIn:'15m',algorithm:'HS256'}
 
         const newAccessToken = jwt.sign({
-                userId:checkToken.userId,
-                role:user.role},
+                userId:UserData.user_id,
+                role:UserData.role},
                 JWT_SECRET_KEY,
                 newAccessOption
         )
 
         const newRefreshToken = jwt.sign({
-            userId:checkToken.userId},
+            userId:UserData.user_id},
             JWT_REFRESH_KEY,
             newRefreshOption
         )
@@ -153,7 +146,7 @@ export const ServiceRefresh = async(token:string)=>{
         const expireTime:Date = new Date(Date.now()+ 7 * 24 * 60 * 60 * 1000)
 
         const newRefToken =({
-            user_id:checkToken.userId,
+            user_id:UserData.user_id,
             token:newRefreshToken,
             expires_at:expireTime
         })

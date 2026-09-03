@@ -2,7 +2,7 @@ import type { Request,Response,NextFunction } from "express";
 import AppError from "../errors/AppError.js";
 import { logger } from "../utils/logger.js";
 
-export const errorHandler = (error:unknown,req:Request,res:Response,next:NextFunction) =>{
+export const errorHandler = (error:unknown,req:Request,res:Response,_next:NextFunction) =>{
 
     if(typeof error === 'object'&& error !== null && 'type' in error && error.type === "entity.too.large"){
         logger.warn(`${req.reqId} ${req.method} ${req.url} Request body too large`)
