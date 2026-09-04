@@ -387,12 +387,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Development Difficulties & Resolutions/Encounted Erros.md",
+                "file": "docs/Docker-docs/07 - Docker Networking.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Encounted Erros"
+              "title": "07 - Docker Networking"
             }
           }
         ],
@@ -562,10 +562,17 @@
   },
   "active": "906d9f35e75d5f15",
   "lastOpenFiles": [
+    "docs/Docker-docs/06 - Environment Variables & Secrets.md",
+    "docs/Docker-docs/05 - Multi-Stage Production Builds.md",
+    "docs/Docker-docs/04 - Dockerfile & Building Images.md",
+    "docs/Docker-docs/03 - Images & Containers.md",
+    "docs/Docker-docs/02 - Docker Fundamentals.md",
+    "docs/Docker-docs/01 - WSL & Ubuntu Setup.md",
+    "docs/Docker-docs/00 - Docker Learning Path.md",
+    "Development Difficulties & Resolutions/Encounted Erros.md",
     "docs/00 - Project Overview Docs/06 - Tech Stack.md",
     "docs/00 - Project Overview Docs/03 - Project Scope.md",
     "docs/00 - Project Overview Docs/01 - Project Overview.md",
-    "Development Difficulties & Resolutions/Encounted Erros.md",
     "Development Difficulties & Resolutions",
     "docs/Untitled",
     "docs/06 - Authorization Design Docs/04 - Protected Resource Access.md",
@@ -585,14 +592,7 @@
     "docs/04 - API Design Docs/07 - API Error Responses.md",
     "docs/04 - API Design Docs/06 - Protected Routes API.md",
     "docs/04 - API Design Docs/05 - Logout API.md",
-    "docs/04 - API Design Docs/04 - Refresh Token API.md",
-    "docs/04 - API Design Docs/02 - Register API.md",
-    "docs/04 - API Design Docs/03 - Login API.md",
-    "docs/04 - API Design Docs/01 - API Overview.md",
     "docs/04 - API Design Docs",
-    "docs/03 - Database Design Docs/05 - Database Security.md",
-    "docs/03 - Database Design Docs/04 - Database Relationships.md",
-    "docs/03 - Database Design Docs/03 - Refresh Token Design.md",
     "docs/03 - Database Design Docs",
     "docs/01 - Project Setup Docs",
     "docs/00 - Project Overview Docs",
