@@ -80,5 +80,5 @@ async function gracefulShutdown() {
         }
 
         try{ await pool.end()}
-        catch(error){logger.error("ERROR OCCURED WHILE CLOSING THE DB: ",error)}
+        catch(error){logger.error("ERROR OCCURED WHILE CLOSING(SHUTTING DOWN) THE DB: ",error)}
 }
