@@ -12,6 +12,8 @@ export const errorHandler = (error:unknown,req:Request,res:Response,_next:NextFu
         })
     }
 
+    
+
     if(error instanceof AppError){
 
         logger.warn(`${req.reqId} ${req.method} ${req.url} ${error.message} ${error.statusCode}`)

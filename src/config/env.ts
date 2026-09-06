@@ -35,7 +35,7 @@ if (!PORT) {
 }
 
 if (!JWT_SECRET_KEY) {
-    console.error("JWT_SECRET is missing.");
+    console.error("JWT_SECRET_KEY is missing.");
     process.exit(1);
 }
 

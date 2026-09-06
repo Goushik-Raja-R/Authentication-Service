@@ -1,4 +1,3 @@
-import { Result } from "pg";
 import pool from "../config/database.js";
 import type { RegisterUser,RefreshTokenUser } from "../types/user.types.js";
 import { hashRefreshToken } from "../utils/hashRefreshToken.js";
