@@ -19,4 +19,10 @@ authrouter.get("/test-error", (req:Request,res:Response) => {
     throw new Error("Testing unexpected server error");
 });
 
+authrouter.get("/health",(req:Request,res:Response)=>{
+    return res.status(200).json({
+        message:"Health Check passsed"
+    })
+})
+
 export default authrouter;
