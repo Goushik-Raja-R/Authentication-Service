@@ -26,7 +26,7 @@ services:
     image: authentication-service
     env_file:
       - .env
-    ports:
+    expose:
       - "3000"
     networks:
       - authentication-network
