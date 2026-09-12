@@ -21,7 +21,7 @@ authrouter.get("/test-error", (req:Request,res:Response) => {
 
 authrouter.get("/health",(req:Request,res:Response)=>{
     return res.status(200).json({
-        message:"Health Check passsed"
+        message:"Health Check passed"
     })
 })
 
