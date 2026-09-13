@@ -1,5 +1,6 @@
 import express from 'express';
 const app = express();
+app.set('trust proxy',1);
 import router from './routes/index.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 import helmet from 'helmet';
