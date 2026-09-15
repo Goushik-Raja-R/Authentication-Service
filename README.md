@@ -220,6 +220,58 @@ sessions beyond the lifetime of an individual access token.
 
 Database schema changes are maintained through migration files,
 providing a repeatable way to create and update the database schema.
+
+## Docker & Deployment
+
+The application is containerized using Docker to provide a consistent
+runtime environment across development and deployment.
+
+### Docker
+
+The project includes:
+
+- `Dockerfile` for building the application image
+- `compose.yaml` for defining the application and supporting services
+- `.dockerignore` to exclude unnecessary files from the Docker build context
+
+The containerized application can be run independently of the host
+environment, reducing differences between development and deployment.
+
+### Deployment Architecture
+
+```text
+                    Internet
+                       │
+                       ▼
+                    AWS EC2
+                       │
+                       ▼
+                     Nginx
+                  Reverse Proxy
+                       │
+                       ▼
+               Docker Container
+                       │
+                       ▼
+              Node.js / Express
+                       │
+                       ▼
+                  PostgreSQL
+```
+
+### Nginx
+
+Nginx is used as a reverse proxy in front of the backend application.
+
+It provides a dedicated entry point for incoming requests and forwards
+traffic to the Node.js application running inside the Docker environment.
+
+### AWS EC2
+
+The backend service is deployed on an AWS EC2 instance.
+
+The EC2 environment hosts the containerized application and its
+supporting infrastructure required to run the service.
 ```
 
 ### Rate Limiting
