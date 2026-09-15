@@ -338,3 +338,65 @@ Running Application
 
 The goal of the pipeline is to reduce manual deployment steps and
 provide a repeatable process for validating and deploying the service.
+
+## API Endpoints
+
+The Authentication Service exposes RESTful endpoints for user
+registration, authentication, token management, profile access,
+authorization, and session management.
+
+### Authentication & User Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/register` | Register a new user |
+| `POST` | `/login` | Authenticate a user and issue tokens |
+| `POST` | `/profile` | Retrieve the authenticated user's profile |
+| `DELETE` | `/delete/users/:id` | Delete a user with authorization checks |
+
+### Token & Session Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/refresh` | Generate a new access token using a refresh token |
+| `POST` | `/logout` | Logout the current session |
+| `POST` | `/logoutAll` | Logout from all active sessions |
+
+### System Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Health check endpoint |
+| `GET` | `/test-error` | Test endpoint for server error handling |
+
+### Protected Requests
+
+Protected endpoints use JWT-based authentication.
+
+```text
+Authorization: Bearer <access_token>
+```
+
+Requests requiring authentication are processed through the
+authentication middleware before reaching the protected controller.
+
+### Authorization
+
+User roles are evaluated through authorization middleware for
+operations that require specific permissions.
+
+```text
+Request
+   │
+   ▼
+Authentication Middleware
+   │
+   ▼
+Authorization Middleware
+   │
+   ▼
+Controller
+   │
+   ▼
+Service
+```
