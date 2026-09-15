@@ -456,3 +456,35 @@ PostgreSQL
 - **Utils** contain shared helper functionality.
 - **`app.ts`** configures the Express application.
 - **`server.ts`** starts the application.
+
+## Environment Configuration
+
+The application uses environment variables for runtime configuration
+and sensitive authentication and database settings.
+
+Create a `.env` file in the project root using `.env.example` as a reference.
+
+### Environment Variables
+
+```env
+PORT=3000
+
+JWT_SECRET=
+
+JWT_REFRESH_SECRET=
+
+DATABASE_URL=
+```
+
+| Variable | Purpose |
+|----------|---------|
+| `PORT` | Port on which the application runs |
+| `JWT_SECRET` | Secret used for access-token operations |
+| `JWT_REFRESH_SECRET` | Secret used for refresh-token operations |
+| `DATABASE_URL` | PostgreSQL database connection string |
+
+> **Important:** Never commit the `.env` file or expose JWT secrets,
+> database credentials, or other sensitive configuration values.
+
+The `.env.example` file contains the required variable names without
+storing actual secret values.
