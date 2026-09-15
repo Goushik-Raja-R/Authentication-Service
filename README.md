@@ -680,3 +680,70 @@ The deployment combines:
 - Nginx for reverse proxying
 - Node.js and Express.js for the backend API
 - PostgreSQL for persistent data
+
+## Engineering Challenges & Solutions
+
+Building the authentication service involved solving several practical
+backend engineering problems.
+
+### Refresh Token Management
+
+**Challenge:**  
+Access tokens are short-lived, so the system needed a secure mechanism
+to maintain authenticated sessions without requiring users to log in
+again frequently.
+
+**Solution:**  
+Implemented refresh tokens with server-side persistence and validation.
+The refresh flow verifies the token, checks its database record,
+expiration, and revocation state before issuing a new access token.
+
+### Refresh Token Rotation
+
+**Challenge:**  
+Reusing the same refresh token indefinitely increases the impact of
+token compromise.
+
+**Solution:**  
+Implemented refresh token rotation so that a refresh operation replaces
+the existing refresh token with a new one.
+
+### Session Invalidation
+
+**Challenge:**  
+JWT-based authentication needs a mechanism to invalidate sessions when
+a user logs out.
+
+**Solution:**  
+Implemented individual logout and logout-all functionality by managing
+refresh-token state on the server.
+
+### Role-Based Access Control
+
+**Challenge:**  
+Authentication confirms who the user is, but protected operations may
+also require permission checks.
+
+**Solution:**  
+Implemented authorization middleware that evaluates the authenticated
+user's role before allowing access to protected operations.
+
+### Rate Limiting
+
+**Challenge:**  
+Authentication endpoints can be targeted with excessive requests and
+credential attacks.
+
+**Solution:**  
+Added rate limiting to relevant authentication endpoints to control
+request frequency and reduce abuse.
+
+### Production Deployment
+
+**Challenge:**  
+The application needed to run consistently outside the local
+development environment.
+
+**Solution:**  
+Containerized the application with Docker and deployed it on AWS EC2,
+with Nginx acting as a reverse proxy.
