@@ -747,3 +747,18 @@ development environment.
 **Solution:**  
 Containerized the application with Docker and deployed it on AWS EC2,
 with Nginx acting as a reverse proxy.
+
+## Future Improvements
+
+The project can be extended further with additional production-oriented
+features and improvements.
+
+Planned improvements include:
+
+- Automated CI/CD deployment pipeline
+- Automated test coverage
+- API documentation with OpenAPI / Swagger
+- Improved observability and structured logging
+- Enhanced session and token management
+- Security hardening and additional authentication controls
+- Improved monitoring and health checks
