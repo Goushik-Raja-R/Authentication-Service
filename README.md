@@ -57,19 +57,25 @@ Repositories
   │
   ▼
 PostgreSQL
+```
 
 ### Infrastructure
 
+```text
 Application
-  │
-  ▼   
+    │
+    ▼
 Docker
-  │
-  ▼
+    │
+    ▼
 Nginx
-  │
-  ▼
+    │
+    ▼
 AWS EC2
-  │
-  ▼
+    │
+    ▼
 PostgreSQL
+```
+
+The application is containerized with Docker and deployed on AWS EC2,
+with Nginx acting as the reverse proxy in front of the application.
