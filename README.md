@@ -488,3 +488,76 @@ DATABASE_URL=
 
 The `.env.example` file contains the required variable names without
 storing actual secret values.
+
+## Local Development
+
+### Prerequisites
+
+Make sure the following are installed:
+
+- Node.js
+- npm
+- PostgreSQL
+
+### Setup
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Goushik-Raja-R/Authentication-Service.git
+cd Authentication-Service
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create your environment file:
+
+```bash
+cp .env.example .env
+```
+
+Configure the required environment variables in `.env`:
+
+```env
+PORT=3000
+JWT_SECRET=your_access_token_secret
+JWT_REFRESH_SECRET=your_refresh_token_secret
+DATABASE_URL=your_postgresql_connection_string
+```
+
+### Run in Development
+
+Start the application with the development server:
+
+```bash
+npm run dev
+```
+
+The development server uses `tsx` watch mode and automatically
+restarts when source files are changed.
+
+### Build for Production
+
+Compile the TypeScript application:
+
+```bash
+npm run build
+```
+
+Start the compiled application:
+
+```bash
+npm start
+```
+
+### Health Check
+
+Once the application is running, verify the service using:
+
+```text
+GET /health
+```
