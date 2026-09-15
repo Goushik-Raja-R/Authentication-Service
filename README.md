@@ -169,6 +169,57 @@ Authenticated User
      ┌──┴──┐
      ▼     ▼
    Allow  Reject
+
+   ## Database & Persistence
+
+PostgreSQL is used as the primary relational database for persistent
+application data.
+
+The application uses a connection pool so database connections can be
+reused across requests instead of creating a new connection for every
+request. :contentReference[oaicite:1]{index=1}
+
+### Database Responsibilities
+
+The database is responsible for persisting:
+
+- User information
+- Authentication-related data
+- Refresh tokens
+- Token expiration information
+- Token revocation state
+
+### Refresh Token Persistence
+
+Refresh tokens are stored in PostgreSQL and validated against the
+database during the refresh flow.
+
+```text
+Client
+   │
+   │ Refresh Token
+   ▼
+Authentication Service
+   │
+   ├── Verify JWT
+   │
+   ├── Check database record
+   │
+   ├── Check expiration
+   │
+   ├── Check revocation
+   │
+   ▼
+Generate New Access Token
+```
+
+This allows the server to invalidate refresh tokens and manage user
+sessions beyond the lifetime of an individual access token.
+
+### Database Migrations
+
+Database schema changes are maintained through migration files,
+providing a repeatable way to create and update the database schema.
 ```
 
 ### Rate Limiting
