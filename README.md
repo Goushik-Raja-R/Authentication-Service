@@ -29,3 +29,47 @@ The system implements:
 - Nginx reverse proxy
 - AWS EC2 deployment
 - CI/CD
+
+## Architecture
+
+The application follows a layered backend architecture that separates
+HTTP handling, business logic, data access, and infrastructure concerns.
+
+```text
+Client
+  │
+  ▼
+Express.js API
+  │
+  ├── Middleware
+  │     ├── Authentication
+  │     ├── Authorization (RBAC)
+  │     └── Rate Limiting
+  │
+  ▼
+Controllers
+  │
+  ▼
+Services
+  │
+  ▼
+Repositories
+  │
+  ▼
+PostgreSQL
+
+## Infrastructure
+
+Application
+    │
+    ▼
+Docker
+    │
+    ▼
+Nginx
+    │
+    ▼
+AWS EC2
+    │
+    ▼
+PostgreSQL
