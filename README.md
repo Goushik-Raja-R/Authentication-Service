@@ -561,3 +561,58 @@ Once the application is running, verify the service using:
 ```text
 GET /health
 ```
+
+## Docker
+
+The application is containerized using Docker to provide a consistent
+runtime environment across development and deployment.
+
+### Dockerfile
+
+The `Dockerfile` defines the image used to package the Node.js
+application and its runtime dependencies.
+
+### Docker Compose
+
+The `compose.yaml` file is used to define and run the containerized
+application and its supporting services.
+
+### Container Flow
+
+```text
+Source Code
+    │
+    ▼
+Dockerfile
+    │
+    ▼
+Docker Image
+    │
+    ▼
+Docker Container
+    │
+    ▼
+Node.js / Express Application
+```
+
+### Docker Workflow
+
+```text
+Build
+  │
+  ▼
+Docker Image
+  │
+  ▼
+Run Container
+  │
+  ▼
+Express API
+  │
+  ▼
+PostgreSQL
+```
+
+Docker provides an isolated and reproducible environment for running
+the application and helps maintain consistency between development
+and deployment environments.
