@@ -57,8 +57,9 @@ Repositories
   │
   ▼
 PostgreSQL
-  │
-  ▼
+
+### Infrastructure
+
 Application
   │
   ▼   
