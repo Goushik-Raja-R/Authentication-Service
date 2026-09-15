@@ -57,19 +57,3 @@ Repositories
   │
   ▼
 PostgreSQL
-
-## Infrastructure
-
-Application
-    │
-    ▼
-Docker
-    │
-    ▼
-Nginx
-    │
-    ▼
-AWS EC2
-    │
-    ▼
-PostgreSQL
