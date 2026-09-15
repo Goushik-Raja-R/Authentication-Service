@@ -79,3 +79,99 @@ PostgreSQL
 
 The application is containerized with Docker and deployed on AWS EC2,
 with Nginx acting as the reverse proxy in front of the application.
+
+## Authentication & Security
+
+The service implements a token-based authentication system with
+multiple layers of security.
+
+### Authentication Flow
+
+```text
+Register
+   │
+   ▼
+Validate User Input
+   │
+   ▼
+Hash Password
+   │
+   ▼
+Store User in PostgreSQL
+```
+
+```text
+Login
+   │
+   ▼
+Validate Credentials
+   │
+   ▼
+Generate Access Token
+   │
+   ▼
+Generate Refresh Token
+   │
+   ▼
+Store Refresh Token
+   │
+   ▼
+Return Tokens to Client
+```
+
+### Access Token
+
+The access token is used to authenticate protected API requests.
+
+```text
+Client
+  │
+  │ Authorization: Bearer <access_token>
+  ▼
+Authentication Middleware
+  │
+  ▼
+Verify JWT
+  │
+  ▼
+Allow / Reject Request
+```
+
+### Refresh Token
+
+Refresh tokens are persisted and validated by the server.
+
+The refresh-token flow includes:
+
+- JWT verification
+- Database existence check
+- Revocation check
+- Expiration check
+- Refresh-token rotation
+- Logout and session invalidation
+
+### Role-Based Access Control
+
+RBAC is implemented through authorization middleware.
+
+```text
+Authenticated User
+        │
+        ▼
+   JWT Verification
+        │
+        ▼
+    User Role
+        │
+        ▼
+ Authorization Middleware
+        │
+     ┌──┴──┐
+     ▼     ▼
+   Allow  Reject
+```
+
+### Rate Limiting
+
+Rate limiting is applied to protect authentication endpoints
+from excessive requests and abuse.
