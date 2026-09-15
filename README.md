@@ -278,3 +278,63 @@ supporting infrastructure required to run the service.
 
 Rate limiting is applied to protect authentication endpoints
 from excessive requests and abuse.
+
+## CI/CD
+
+The project is designed to use a CI/CD pipeline to automate
+application validation and deployment.
+
+### Continuous Integration
+
+Every change pushed to the repository will trigger automated checks
+to verify that the application remains buildable and maintainable.
+
+The CI pipeline will include:
+
+```text
+Git Push
+   │
+   ▼
+GitHub Actions
+   │
+   ├── Install Dependencies
+   │
+   ├── TypeScript Validation
+   │
+   ├── Build Application
+   │
+   └── Run Tests
+          │
+          ▼
+       CI Result
+```
+
+### Continuous Deployment
+
+After the CI checks pass, the deployment pipeline will automate the
+process of delivering the application to the AWS EC2 environment.
+
+```text
+Git Push
+   │
+   ▼
+GitHub Actions
+   │
+   ▼
+CI Checks
+   │
+   ▼
+Docker Build
+   │
+   ▼
+Deployment
+   │
+   ▼
+AWS EC2
+   │
+   ▼
+Running Application
+```
+
+The goal of the pipeline is to reduce manual deployment steps and
+provide a repeatable process for validating and deploying the service.
