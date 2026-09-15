@@ -28,7 +28,6 @@ The system implements:
 - Docker-based deployment
 - Nginx reverse proxy
 - AWS EC2 deployment
-- CI/CD
 
 ## Architecture
 
@@ -169,16 +168,21 @@ Authenticated User
      ┌──┴──┐
      ▼     ▼
    Allow  Reject
-   ```
+```
 
-   ## Database & Persistence
+### Rate Limiting
+
+Rate limiting is applied to protect authentication endpoints
+from excessive requests and abuse.
+
+## Database & Persistence
 
 PostgreSQL is used as the primary relational database for persistent
 application data.
 
 The application uses a connection pool so database connections can be
 reused across requests instead of creating a new connection for every
-request. :contentReference[oaicite:1]{index=1}
+request.
 
 ### Database Responsibilities
 
@@ -221,119 +225,6 @@ sessions beyond the lifetime of an individual access token.
 
 Database schema changes are maintained through migration files,
 providing a repeatable way to create and update the database schema.
-
-### Docker
-
-The project includes:
-
-- `Dockerfile` for building the application image
-- `compose.yaml` for defining the application and supporting services
-- `.dockerignore` to exclude unnecessary files from the Docker build context
-
-The containerized application can be run independently of the host
-environment, reducing differences between development and deployment.
-
-### Deployment Architecture
-
-```text
-                    Internet
-                       │
-                       ▼
-                    AWS EC2
-                       │
-                       ▼
-                     Nginx
-                  Reverse Proxy
-                       │
-                       ▼
-               Docker Container
-                       │
-                       ▼
-              Node.js / Express
-                       │
-                       ▼
-                  PostgreSQL
-```
-
-### Nginx
-
-Nginx is used as a reverse proxy in front of the backend application.
-
-It provides a dedicated entry point for incoming requests and forwards
-traffic to the Node.js application running inside the Docker environment.
-
-### AWS EC2
-
-The backend service is deployed on an AWS EC2 instance.
-
-The EC2 environment hosts the containerized application and its
-supporting infrastructure required to run the service.
-```
-
-### Rate Limiting
-
-Rate limiting is applied to protect authentication endpoints
-from excessive requests and abuse.
-
-## CI/CD
-
-The project is designed to use a CI/CD pipeline to automate
-application validation and deployment.
-
-### Continuous Integration
-
-Every change pushed to the repository will trigger automated checks
-to verify that the application remains buildable and maintainable.
-
-The CI pipeline will include:
-
-```text
-Git Push
-   │
-   ▼
-GitHub Actions
-   │
-   ├── Install Dependencies
-   │
-   ├── TypeScript Validation
-   │
-   ├── Build Application
-   │
-   └── Run Tests
-          │
-          ▼
-       CI Result
-```
-
-### Continuous Deployment
-
-After the CI checks pass, the deployment pipeline will automate the
-process of delivering the application to the AWS EC2 environment.
-
-```text
-Git Push
-   │
-   ▼
-GitHub Actions
-   │
-   ▼
-CI Checks
-   │
-   ▼
-Docker Build
-   │
-   ▼
-Deployment
-   │
-   ▼
-AWS EC2
-   │
-   ▼
-Running Application
-```
-
-The goal of the pipeline is to reduce manual deployment steps and
-provide a repeatable process for validating and deploying the service.
 
 ## API Endpoints
 
@@ -396,6 +287,7 @@ Controller
    ▼
 Service
 ```
+
 ## Project Structure
 
 The project follows a layered backend architecture with separate
@@ -452,111 +344,6 @@ PostgreSQL
 - **Utils** contain shared helper functionality.
 - **`app.ts`** configures the Express application.
 - **`server.ts`** starts the application.
-
-## Environment Configuration
-
-The application uses environment variables for runtime configuration
-and sensitive authentication and database settings.
-
-Create a `.env` file in the project root using `.env.example` as a reference.
-
-### Environment Variables
-
-```env
-PORT=3000
-
-JWT_SECRET=
-
-JWT_REFRESH_SECRET=
-
-DATABASE_URL=
-```
-
-| Variable | Purpose |
-|----------|---------|
-| `PORT` | Port on which the application runs |
-| `JWT_SECRET` | Secret used for access-token operations |
-| `JWT_REFRESH_SECRET` | Secret used for refresh-token operations |
-| `DATABASE_URL` | PostgreSQL database connection string |
-
-> **Important:** Never commit the `.env` file or expose JWT secrets,
-> database credentials, or other sensitive configuration values.
-
-The `.env.example` file contains the required variable names without
-storing actual secret values.
-
-## Local Development
-
-### Prerequisites
-
-Make sure the following are installed:
-
-- Node.js
-- npm
-- PostgreSQL
-
-### Setup
-
-Clone the repository:
-
-```bash
-git clone https://github.com/Goushik-Raja-R/Authentication-Service.git
-cd Authentication-Service
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Create your environment file:
-
-```bash
-cp .env.example .env
-```
-
-Configure the required environment variables in `.env`:
-
-```env
-PORT=3000
-JWT_SECRET=your_access_token_secret
-JWT_REFRESH_SECRET=your_refresh_token_secret
-DATABASE_URL=your_postgresql_connection_string
-```
-
-### Run in Development
-
-Start the application with the development server:
-
-```bash
-npm run dev
-```
-
-The development server uses `tsx` watch mode and automatically
-restarts when source files are changed.
-
-### Build for Production
-
-Compile the TypeScript application:
-
-```bash
-npm run build
-```
-
-Start the compiled application:
-
-```bash
-npm start
-```
-
-### Health Check
-
-Once the application is running, verify the service using:
-
-```text
-GET /health
-```
 
 ## Docker
 
@@ -676,6 +463,139 @@ The deployment combines:
 - Nginx for reverse proxying
 - Node.js and Express.js for the backend API
 - PostgreSQL for persistent data
+
+## CI/CD
+
+The project is designed to use a CI/CD pipeline to automate
+application validation and deployment.
+
+### Continuous Integration
+
+Every change pushed to the repository will trigger automated checks
+to verify that the application remains buildable and maintainable.
+
+The CI pipeline will include:
+
+```text
+Git Push
+   │
+   ▼
+GitHub Actions
+   │
+   ├── Install Dependencies
+   │
+   ├── TypeScript Validation
+   │
+   ├── Build Application
+   │
+   └── Run Tests
+          │
+          ▼
+       CI Result
+```
+
+### Continuous Deployment
+
+After the CI checks pass, the deployment pipeline will automate the
+process of delivering the application to the AWS EC2 environment.
+
+```text
+Git Push
+   │
+   ▼
+GitHub Actions
+   │
+   ▼
+CI Checks
+   │
+   ▼
+Docker Build
+   │
+   ▼
+Deployment
+   │
+   ▼
+AWS EC2
+   │
+   ▼
+Running Application
+```
+
+The goal of the pipeline is to reduce manual deployment steps and
+provide a repeatable process for validating and deploying the service.
+
+## Local Development
+
+### Prerequisites
+
+Make sure the following are installed:
+
+- Node.js
+- npm
+- PostgreSQL
+
+### Setup
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Goushik-Raja-R/Authentication-Service.git
+cd Authentication-Service
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create your environment file:
+
+```bash
+cp .env.example .env
+```
+
+Configure the required environment variables in `.env`:
+
+```env
+PORT=3000
+JWT_SECRET=your_access_token_secret
+JWT_REFRESH_SECRET=your_refresh_token_secret
+DATABASE_URL=your_postgresql_connection_string
+```
+
+### Run in Development
+
+Start the application with the development server:
+
+```bash
+npm run dev
+```
+
+The development server uses `tsx` watch mode and automatically
+restarts when source files are changed.
+
+### Build for Production
+
+Compile the TypeScript application:
+
+```bash
+npm run build
+```
+
+Start the compiled application:
+
+```bash
+npm start
+```
+
+### Health Check
+
+Once the application is running, verify the service using:
+
+```text
+GET /health
+```
 
 ## Engineering Challenges & Solutions
 
