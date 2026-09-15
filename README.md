@@ -616,3 +616,67 @@ PostgreSQL
 Docker provides an isolated and reproducible environment for running
 the application and helps maintain consistency between development
 and deployment environments.
+
+## Nginx & AWS EC2 Deployment
+
+The application is deployed on an AWS EC2 instance and exposed through
+Nginx as a reverse proxy.
+
+### Deployment Architecture
+
+```text
+                    Internet
+                       │
+                       ▼
+                   AWS EC2
+                       │
+                       ▼
+                     Nginx
+                Reverse Proxy
+                       │
+                       ▼
+              Docker Container
+                       │
+                       ▼
+             Node.js / Express
+                       │
+                       ▼
+                  PostgreSQL
+```
+
+### Nginx Reverse Proxy
+
+Nginx acts as the public-facing reverse proxy for the application.
+
+Incoming HTTP requests are received by Nginx and forwarded to the
+Node.js / Express application running inside the Docker container.
+
+```text
+Client
+  │
+  │ HTTP Request
+  ▼
+Nginx
+  │
+  │ Proxy Request
+  ▼
+Node.js / Express
+  │
+  ▼
+Application Logic
+```
+
+### AWS EC2
+
+The application runs on an AWS EC2 instance.
+
+The EC2 instance provides the compute environment for the deployed
+containerized backend service.
+
+The deployment combines:
+
+- AWS EC2 for compute
+- Docker for application containerization
+- Nginx for reverse proxying
+- Node.js and Express.js for the backend API
+- PostgreSQL for persistent data
