@@ -400,3 +400,59 @@ Controller
    ▼
 Service
 ```
+## Project Structure
+
+The project follows a layered backend architecture with separate
+responsibilities for routing, request handling, business logic,
+data access, error handling, background jobs, and application
+configuration.
+
+```text
+src/
+├── config/          # Application and database configuration
+├── controllers/     # Handle incoming requests and responses
+├── errors/          # Custom application errors and error handling
+├── jobs/            # Background and scheduled jobs
+├── middlewares/     # Authentication, authorization, validation, and rate limiting
+├── repositories/    # Database access and persistence logic
+├── routes/          # API route definitions
+├── services/        # Business logic
+├── types/           # TypeScript types and interfaces
+├── utils/            # Shared utility functions
+├── app.ts           # Express application configuration
+└── server.ts        # Application entry point
+```
+
+### Layer Responsibilities
+
+```text
+Routes
+   │
+   ▼
+Middlewares
+   │
+   ▼
+Controllers
+   │
+   ▼
+Services
+   │
+   ▼
+Repositories
+   │
+   ▼
+PostgreSQL
+```
+
+- **Routes** define the API endpoints and connect requests to middleware and controllers.
+- **Middlewares** handle cross-cutting concerns such as authentication, authorization, validation, and rate limiting.
+- **Controllers** handle HTTP requests and responses.
+- **Services** contain the application's business logic.
+- **Repositories** handle database interaction and persistence.
+- **Errors** provide centralized application error handling.
+- **Jobs** contain background or scheduled tasks.
+- **Config** manages application and database configuration.
+- **Types** contain reusable TypeScript types and interfaces.
+- **Utils** contain shared helper functionality.
+- **`app.ts`** configures the Express application.
+- **`server.ts`** starts the application.
