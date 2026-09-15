@@ -57,3 +57,18 @@ Repositories
   │
   ▼
 PostgreSQL
+  │
+  ▼
+Application
+  │
+  ▼   
+Docker
+  │
+  ▼
+Nginx
+  │
+  ▼
+AWS EC2
+  │
+  ▼
+PostgreSQL
