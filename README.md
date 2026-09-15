@@ -169,6 +169,7 @@ Authenticated User
      ┌──┴──┐
      ▼     ▼
    Allow  Reject
+   ```
 
    ## Database & Persistence
 
@@ -220,11 +221,6 @@ sessions beyond the lifetime of an individual access token.
 
 Database schema changes are maintained through migration files,
 providing a repeatable way to create and update the database schema.
-
-## Docker & Deployment
-
-The application is containerized using Docker to provide a consistent
-runtime environment across development and deployment.
 
 ### Docker
 
