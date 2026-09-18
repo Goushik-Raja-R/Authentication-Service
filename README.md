@@ -1,4 +1,4 @@
-# Authentication Services
+# Authentication Service
 
 A production-style backend authentication service built with TypeScript,
 Node.js, Express.js, and PostgreSQL.
