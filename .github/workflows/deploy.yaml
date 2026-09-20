@@ -24,3 +24,9 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+      - name: check docker
+        run: docker --version
+
+      - name: build image
+        run: docker build -t authentication-service .
