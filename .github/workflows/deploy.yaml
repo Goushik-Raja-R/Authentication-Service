@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      EC2_HOST: 13.201.89.75
+      EC2_HOST: 65.0.87.144
 
     steps:
       - name: Configure SSH
